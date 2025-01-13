@@ -31,7 +31,7 @@ interface IAlgebraFactory{
 contract PairAPI is Initializable {
 
 
-    struct pairInfo {
+    struct PairInfo {
         // pair info
         address pair_address; 			// pair contract address
         string symbol; 				    // pair symbol
@@ -71,7 +71,7 @@ contract PairAPI is Initializable {
     }
 
 
-    struct tokenBribe {
+    struct TokenBribe {
         address token;
         uint8 decimals;
         uint256 amount;
@@ -79,11 +79,11 @@ contract PairAPI is Initializable {
     }
     
 
-    struct pairBribeEpoch {
+    struct PairBribeEpoch {
         uint256 epochTimestamp;
         uint256 totalVotes;
         address pair;
-        tokenBribe[] bribes;
+        TokenBribe[] bribes;
     }
 
     uint256 public constant MAX_PAIRS = 1000;
@@ -122,12 +122,12 @@ contract PairAPI is Initializable {
 
 
     // valid only for sAMM and vAMM
-    function getAllPair(address _user, uint _amounts, uint _offset) external view returns(pairInfo[] memory Pairs){
+    function getAllPair(address _user, uint _amounts, uint _offset) external view returns(PairInfo[] memory pairs){
 
         
         require(_amounts <= MAX_PAIRS, 'too many pair');
 
-        Pairs = new pairInfo[](_amounts);
+        pairs = new PairInfo[](_amounts);
         
         uint i = _offset;
         uint totPairs = pairFactory.allPairsLength();
@@ -139,17 +139,17 @@ contract PairAPI is Initializable {
                 break;
             }
             _pair = pairFactory.allPairs(i);
-            Pairs[i - _offset] = _pairAddressToInfo(_pair, _user);
+            pairs[i - _offset] = _pairAddressToInfo(_pair, _user);
         }
 
 
     }
 
-    function getPair(address _pair, address _account) external view returns(pairInfo memory _pairInfo){
+    function getPair(address _pair, address _account) external view returns(PairInfo memory _pairInfo){
         return _pairAddressToInfo(_pair, _account);
     }
 
-    function _pairAddressToInfo(address _pair, address _account) internal view returns(pairInfo memory _pairInfo) {
+    function _pairAddressToInfo(address _pair, address _account) internal view returns(PairInfo memory _pairInfo) {
 
         IPair ipair = IPair(_pair); 
         
@@ -231,11 +231,11 @@ contract PairAPI is Initializable {
         
     }
 
-    function getPairBribe(uint _amounts, uint _offset, address _pair) external view returns(pairBribeEpoch[] memory _pairEpoch){
+    function getPairBribe(uint _amounts, uint _offset, address _pair) external view returns(PairBribeEpoch[] memory _pairEpoch){
 
         require(_amounts <= MAX_EPOCHS, 'too many epochs');
 
-        _pairEpoch = new pairBribeEpoch[](_amounts);
+        _pairEpoch = new PairBribeEpoch[](_amounts);
 
         address _gauge = voter.gauges(_pair);
         if(_gauge == address(0)) return _pairEpoch;
@@ -272,12 +272,12 @@ contract PairAPI is Initializable {
 
     }
 
-    function _bribe(uint _ts, address _br) internal view returns(tokenBribe[] memory _tb){
+    function _bribe(uint _ts, address _br) internal view returns(TokenBribe[] memory _tb){
 
         IBribeAPI _wb = IBribeAPI(_br);
         uint tokenLen = _wb.rewardsListLength();
 
-        _tb = new tokenBribe[](tokenLen);
+        _tb = new TokenBribe[](tokenLen);
 
         uint k;
         uint _rewPerEpoch;

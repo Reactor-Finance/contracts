@@ -9,7 +9,7 @@ contract TradeHelper {
     address public immutable factory;
     bytes32 public immutable pairCodeHash;
 
-    struct route {
+    struct Route {
         address from;
         address to;
         bool stable;
@@ -69,7 +69,7 @@ contract TradeHelper {
         return amountStable > amountVolatile ? (amountStable, true) : (amountVolatile, false);
     }
 
-    function getAmountsOut(uint amountIn, route[] memory routes) public view returns (uint[] memory amounts) {
+    function getAmountsOut(uint amountIn, Route[] memory routes) public view returns (uint[] memory amounts) {
         require(routes.length >= 1, 'TradeHelper: INVALID_PATH');
         amounts = new uint[](routes.length+1);
         amounts[0] = amountIn;
@@ -148,7 +148,7 @@ contract TradeHelper {
         return amountStable < amountVolatile ? (amountStable, true) : (amountVolatile, false);
     }
 
-    function getAmountsIn(uint amountOut, route[] memory routes) public view returns (uint[] memory amounts) {
+    function getAmountsIn(uint amountOut, Route[] memory routes) public view returns (uint[] memory amounts) {
         require(routes.length >= 1, 'TradeHelper: INVALID_PATH');
         amounts = new uint[](routes.length + 1);
         amounts[routes.length] = amountOut;

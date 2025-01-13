@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./libraries/TransferHelper.sol";
 
 interface ITradeHelper {
     struct Route {
@@ -41,7 +42,7 @@ interface IBaseV1Pair {
     function getAmountOut(uint, address) external view returns (uint);
 }
 
-interface erc20 {
+interface ERC20 {
     function totalSupply() external view returns (uint256);
     function transfer(address recipient, uint amount) external returns (bool);
     function decimals() external view returns (uint8);
@@ -78,7 +79,7 @@ library Math {
     }
 }
 
-interface IWETH {
+interface IWETH is IERC20 {
     function deposit() external payable;
     function transfer(address to, uint value) external returns (bool);
     function withdraw(uint) external;
@@ -199,7 +200,7 @@ contract GlobalRouter {
             amounts = tradeHelper.getAmountsOut(amountIn, routes);
             require(amounts[amounts.length - 1] >= amountOutMin, 'BaseV1Router: INSUFFICIENT_OUTPUT_AMOUNT');
             address _pair = tradeHelper.pairFor(routes[0].from, routes[0].to, routes[0].stable);
-            _safeTransferFrom( routes[0].from, msg.sender, _pair, amounts[0] );
+            TransferHelper._safeTransferFromERC20(routes[0].from, msg.sender, _pair, amounts[0]);
             _swap(amounts, routes, to);
         }
 
@@ -285,7 +286,7 @@ contract GlobalRouter {
     function _safeTransferFrom(address token, address from, address to, uint256 value) internal {
         require(token.code.length > 0);
         (bool success, bytes memory data) =
-        token.call(abi.encodeWithSelector(erc20.transferFrom.selector, from, to, value));
+        token.call(abi.encodeWithSelector(ERC20.transferFrom.selector, from, to, value));
         require(success && (data.length == 0 || abi.decode(data, (bool))));
     }
     
@@ -297,7 +298,7 @@ contract GlobalRouter {
     function _safeTransfer(address token, address to, uint256 value) internal {
         require(token.code.length > 0);
         (bool success, bytes memory data) =
-        token.call(abi.encodeWithSelector(erc20.transfer.selector, to, value));
+        token.call(abi.encodeWithSelector(ERC20.transfer.selector, to, value));
         require(success && (data.length == 0 || abi.decode(data, (bool))));
     }
 

@@ -17,7 +17,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "hardhat/console.sol";
 
 interface IPairAPI {
-    struct pairInfo {
+    struct PairInfo {
         // pair info
         address pair_address; 			// pair contract address
         string symbol; 				    // pair symbol
@@ -56,19 +56,19 @@ interface IPairAPI {
         uint account_gauge_earned; 		// account earned emissions for this pair
     }
 
-    function getPair(address _pair, address _account) external view returns(pairInfo memory _pairInfo);
+    function getPair(address _pair, address _account) external view returns(PairInfo memory _PairInfo);
 
     function pair_factory() external view returns(address);
 }
 
-contract veNFTAPI is Initializable {
+contract VeNFTAPI is Initializable {
 
-    struct pairVotes {
+    struct PairVotes {
         address pair;
         uint256 weight;
     }
 
-    struct veNFT {
+    struct VeNFT {
         uint8 decimals;
         
         bool voted;
@@ -80,7 +80,7 @@ contract veNFTAPI is Initializable {
         uint256 rebase_amount;
         uint256 lockEnd;
         uint256 vote_ts;
-        pairVotes[] votes;        
+        PairVotes[] votes;        
         
         address account;
 
@@ -144,10 +144,10 @@ contract veNFTAPI is Initializable {
 
 
 
-    function getAllNFT(uint256 _amounts, uint256 _offset) external view returns(veNFT[] memory _veNFT){
+    function getAllNFT(uint256 _amounts, uint256 _offset) external view returns(VeNFT[] memory _VeNFT){
 
         require(_amounts <= MAX_RESULTS, 'too many nfts');
-        _veNFT = new veNFT[](_amounts);
+        _VeNFT = new VeNFT[](_amounts);
 
         uint i = _offset;
         address _owner;
@@ -156,39 +156,39 @@ contract veNFTAPI is Initializable {
             _owner = ve.ownerOf(i);
             // if id_i has owner read data
             if(_owner != address(0)){
-                _veNFT[i-_offset] = _getNFTFromId(i, _owner);
+                _VeNFT[i-_offset] = _getNFTFromId(i, _owner);
             }
         }
     }
 
-    function getNFTFromId(uint256 id) external view returns(veNFT memory){
+    function getNFTFromId(uint256 id) external view returns(VeNFT memory){
         return _getNFTFromId(id,ve.ownerOf(id));
     }
 
-    function getNFTFromAddress(address _user) external view returns(veNFT[] memory venft){
+    function getNFTFromAddress(address _user) external view returns(VeNFT[] memory veNFT){
 
         uint256 i=0;
         uint256 _id;
         uint256 totNFTs = ve.balanceOf(_user);
 
-        venft = new veNFT[](totNFTs);
+        veNFT = new VeNFT[](totNFTs);
 
         for(i; i < totNFTs; i++){
             _id = ve.tokenOfOwnerByIndex(_user, i);
             if(_id != 0){
-                venft[i] = _getNFTFromId(_id, _user);
+                veNFT[i] = _getNFTFromId(_id, _user);
             }
         }
     }
 
-    function _getNFTFromId(uint256 id, address _owner) internal view returns(veNFT memory venft){
+    function _getNFTFromId(uint256 id, address _owner) internal view returns(VeNFT memory veNFT){
 
         if(_owner == address(0)){
-            return venft;
+            return veNFT;
         }
 
         uint _totalPoolVotes = voter.poolVoteLength(id);
-        pairVotes[] memory votes = new pairVotes[](_totalPoolVotes);
+        PairVotes[] memory votes = new PairVotes[](_totalPoolVotes);
 
         IVotingEscrow.LockedBalance memory _lockedBalance;
         _lockedBalance = ve.locked(id);
@@ -208,20 +208,20 @@ contract veNFTAPI is Initializable {
             votes[k].weight = _poolWeight;
         }
 
-        venft.id = id;
-        venft.account = _owner;
-        venft.decimals = ve.decimals();
-        venft.amount = uint128(_lockedBalance.amount);
-        venft.voting_amount = ve.balanceOfNFT(id);
-        venft.rebase_amount = rewardDisitributor.claimable(id);
-        venft.lockEnd = _lockedBalance.end;
-        venft.vote_ts = voter.lastVoted(id);
-        venft.votes = votes;
-        venft.token = ve.token();
-        venft.tokenSymbol =  IERC20( ve.token() ).symbol();
-        venft.tokenDecimals = IERC20( ve.token() ).decimals();
-        venft.voted = ve.voted(id);
-        venft.attachments = ve.attachments(id);
+        veNFT.id = id;
+        veNFT.account = _owner;
+        veNFT.decimals = ve.decimals();
+        veNFT.amount = uint128(_lockedBalance.amount);
+        veNFT.voting_amount = ve.balanceOfNFT(id);
+        veNFT.rebase_amount = rewardDisitributor.claimable(id);
+        veNFT.lockEnd = _lockedBalance.end;
+        veNFT.vote_ts = voter.lastVoted(id);
+        veNFT.votes = votes;
+        veNFT.token = ve.token();
+        veNFT.tokenSymbol =  IERC20( ve.token() ).symbol();
+        veNFT.tokenDecimals = IERC20( ve.token() ).decimals();
+        veNFT.voted = ve.voted(id);
+        veNFT.attachments = ve.attachments(id);
       
     }
 
@@ -255,7 +255,7 @@ contract veNFTAPI is Initializable {
         }
 
         
-        IPairAPI.pairInfo memory _pairApi = IPairAPI(pairAPI).getPair(_pair, address(0));
+        IPairAPI.PairInfo memory _pairApi = IPairAPI(pairAPI).getPair(_pair, address(0));
                
         address externalBribe = _pairApi.bribe;
         
