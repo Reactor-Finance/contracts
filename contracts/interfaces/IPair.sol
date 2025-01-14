@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-interface IPair {
+import "./IERC20.sol";
+
+
+interface IPair is IERC20 {
     function metadata() external view returns (uint dec0, uint dec1, uint r0, uint r1, bool st, address t0, address t1);
     function claimFees() external returns (uint, uint);
     function tokens() external view returns (address, address);
@@ -24,6 +27,4 @@ interface IPair {
     function claimable1(address _user) external view returns (uint);
 
     function isStable() external view returns(bool);
-
-
 }

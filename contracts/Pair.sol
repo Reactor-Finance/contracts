@@ -8,10 +8,11 @@ import './interfaces/IDibs.sol';
 import './interfaces/IPairCallee.sol';
 import './factories/PairFactory.sol';
 import './PairFees.sol';
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 
 // The base pair of pools, either stable or volatile
-contract Pair is IPair {
+contract Pair is IPair, ReentrancyGuard {
 
     string public name;
     string public symbol;
@@ -95,10 +96,10 @@ contract Pair is IPair {
         (token0, token1, stable) = (_token0, _token1, _stable);
         fees = address(new PairFees(_token0, _token1));
         if (_stable) {
-            name = string(abi.encodePacked("StableV1 AMM - ", IERC20(_token0).symbol(), "/", IERC20(_token1).symbol()));
+            name = string(abi.encodePacked("Stable AMM - ", IERC20(_token0).symbol(), "/", IERC20(_token1).symbol()));
             symbol = string(abi.encodePacked("sAMM-", IERC20(_token0).symbol(), "/", IERC20(_token1).symbol()));
         } else {
-            name = string(abi.encodePacked("VolatileV1 AMM - ", IERC20(_token0).symbol(), "/", IERC20(_token1).symbol()));
+            name = string(abi.encodePacked("Volatile AMM - ", IERC20(_token0).symbol(), "/", IERC20(_token1).symbol()));
             symbol = string(abi.encodePacked("vAMM-", IERC20(_token0).symbol(), "/", IERC20(_token1).symbol()));
         }
 
@@ -106,15 +107,6 @@ contract Pair is IPair {
         decimals1 = 10**IERC20(_token1).decimals();
 
         observations.push(Observation(block.timestamp, 0, 0));
-    }
-
-    // simple re-entrancy check
-    uint internal _unlocked = 1;
-    modifier lock() {
-        require(_unlocked == 1);
-        _unlocked = 2;
-        _;
-        _unlocked = 1;
     }
 
     function observationLength() external view returns (uint) {
@@ -331,7 +323,7 @@ contract Pair is IPair {
 
     // this low-level function should be called by addLiquidity functions in Router.sol, which performs important safety checks
     // standard uniswap v2 implementation
-    function mint(address to) external lock returns (uint liquidity) {
+    function mint(address to) external nonReentrant returns (uint liquidity) {
         (uint _reserve0, uint _reserve1) = (reserve0, reserve1);
         uint _balance0 = IERC20(token0).balanceOf(address(this));
         uint _balance1 = IERC20(token1).balanceOf(address(this));
@@ -354,7 +346,7 @@ contract Pair is IPair {
 
     // this low-level function should be called from a contract which performs important safety checks
     // standard uniswap v2 implementation
-    function burn(address to) external lock returns (uint amount0, uint amount1) {
+    function burn(address to) external nonReentrant returns (uint amount0, uint amount1) {
         (uint _reserve0, uint _reserve1) = (reserve0, reserve1);
         (address _token0, address _token1) = (token0, token1);
         uint _balance0 = IERC20(_token0).balanceOf(address(this));
@@ -376,7 +368,7 @@ contract Pair is IPair {
     }
 
     // this low-level function should be called from a contract which performs important safety checks
-    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external lock {
+    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external nonReentrant {
         require(!PairFactory(factory).isPaused());
         require(amount0Out > 0 || amount1Out > 0, 'IOA'); // Pair: INSUFFICIENT_OUTPUT_AMOUNT
         (uint _reserve0, uint _reserve1) =  (reserve0, reserve1);
@@ -413,14 +405,14 @@ contract Pair is IPair {
     }
 
     // force balances to match reserves
-    function skim(address to) external lock {
+    function skim(address to) external nonReentrant {
         (address _token0, address _token1) = (token0, token1);
         _safeTransfer(_token0, to, IERC20(_token0).balanceOf(address(this)) - (reserve0));
         _safeTransfer(_token1, to, IERC20(_token1).balanceOf(address(this)) - (reserve1));
     }
 
     // force reserves to match balances
-    function sync() external lock {
+    function sync() external nonReentrant {
         _update(IERC20(token0).balanceOf(address(this)), IERC20(token1).balanceOf(address(this)), reserve0, reserve1);
     }
 
