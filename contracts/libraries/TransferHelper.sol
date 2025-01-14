@@ -31,7 +31,7 @@ library TransferHelper {
         address recipient,
         uint256 amount
     ) internal returns (bytes memory _returnData) {
-        require(token.isContract(), "call_to_non_contract");
+        require(token.isContract(), "non contract call");
         _returnData = token.functionCall(
             abi.encodeWithSelector(
                 transferFromSelector,
