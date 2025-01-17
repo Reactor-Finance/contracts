@@ -159,13 +159,13 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
         address _dibs = IPairFactory(factory).dibs();
         uint256 _maxRef = IPairFactory(factory).MAX_REFERRAL_FEE();
         uint256 _referralFee = (amount * _maxRef) / 10000;
-        _safeTransfer(token0, _dibs, _referralFee); // transfer the fees out to PairFees
+        IERC20(token0).safeTransfer(_dibs, _referralFee); // transfer the fees out to PairFees
         amount -= _referralFee;
 
         // get lp and staking fee
         uint256 _stakingNftFee = (amount * IPairFactory(factory).stakingNFTFee()) / 10000;
         PairFees(fees).processStakingFees(_stakingNftFee, true);
-        _safeTransfer(token0, fees, amount); // transfer the fees out to PairFees
+        IERC20(token0).safeTransfer(fees, amount); // transfer the fees out to PairFees
 
         // remove staking fees from lpfees
         amount -= _stakingNftFee;
@@ -182,13 +182,13 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
         address _dibs = IPairFactory(factory).dibs();
         uint256 _maxRef = IPairFactory(factory).MAX_REFERRAL_FEE();
         uint256 _referralFee = (amount * _maxRef) / 10000;
-        _safeTransfer(token1, _dibs, _referralFee); // transfer the fees out to PairFees
+        IERC20(token1).safeTransfer(_dibs, _referralFee); // transfer the fees out to PairFees
         amount -= _referralFee;
 
         // get lp and staking fee
         uint256 _stakingNftFee = (amount * IPairFactory(factory).stakingNFTFee()) / 10000;
         PairFees(fees).processStakingFees(_stakingNftFee, false);
-        _safeTransfer(token1, fees, amount); // transfer the fees out to PairFees
+        IERC20(token1).safeTransfer(fees, amount); // transfer the fees out to PairFees
 
         // remove staking fees from lpfees
         amount -= _stakingNftFee;
@@ -344,7 +344,7 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
         } else {
             liquidity = Math.min((_amount0 * _totalSupply) / _reserve0, (_amount1 * _totalSupply) / _reserve1);
         }
-        require(liquidity > 0, "ILM"); // Pair: INSUFFICIENT_LIQUIDITY_MINTED
+        require(liquidity > 0, "insufficient liquidity minted"); // Pair: INSUFFICIENT_LIQUIDITY_MINTED
         _mint(to, liquidity);
 
         _update(_balance0, _balance1, _reserve0, _reserve1);
@@ -363,7 +363,7 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
         uint _totalSupply = totalSupply; // gas savings, must be defined here since totalSupply can update in _mintFee
         amount0 = (_liquidity * _balance0) / _totalSupply; // using balances ensures pro-rata distribution
         amount1 = (_liquidity * _balance1) / _totalSupply; // using balances ensures pro-rata distribution
-        require(amount0 > 0 && amount1 > 0, "ILB"); // Pair: INSUFFICIENT_LIQUIDITY_BURNED
+        require(amount0 > 0 && amount1 > 0, "insufficient liquidity burned"); // Pair: INSUFFICIENT_LIQUIDITY_BURNED
         _burn(address(this), _liquidity);
         IERC20(_token0).safeTransfer(to, amount0);
         IERC20(_token1).safeTransfer(to, amount1);
@@ -376,7 +376,6 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
 
     // this low-level function should be called from a contract which performs important safety checks
     function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external nonReentrant {
-        require(!IPairFactory(factory).isPaused());
         require(amount0Out > 0 || amount1Out > 0, "insufficient output amount"); // Pair: INSUFFICIENT_OUTPUT_AMOUNT
         (uint _reserve0, uint _reserve1) = (reserve0, reserve1);
         require(amount0Out < _reserve0 && amount1Out < _reserve1, "insufficient liquidity"); // Pair: INSUFFICIENT_LIQUIDITY
@@ -386,7 +385,7 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
         {
             // scope for _token{0,1}, avoids stack too deep errors
             (address _token0, address _token1) = (token0, token1);
-            require(to != _token0 && to != _token1, "IT"); // Pair: INVALID_TO
+            require(to != _token0 && to != _token1, "invalid to"); // Pair: INVALID_TO
             if (amount0Out > 0) IERC20(_token0).safeTransfer(to, amount0Out); // optimistically transfer tokens
             if (amount1Out > 0) IERC20(_token1).safeTransfer(to, amount1Out); // optimistically transfer tokens
             if (data.length > 0) IPairCallee(to).hook(msg.sender, amount0Out, amount1Out, data); // callback, used for flash loans
@@ -396,7 +395,7 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
 
         uint amount0In = _balance0 > _reserve0 - amount0Out ? _balance0 - (_reserve0 - amount0Out) : 0;
         uint amount1In = _balance1 > _reserve1 - amount1Out ? _balance1 - (_reserve1 - amount1Out) : 0;
-        require(amount0In > 0 || amount1In > 0, "IIA"); // Pair: INSUFFICIENT_INPUT_AMOUNT
+        require(amount0In > 0 || amount1In > 0, "insufficient input amount"); // Pair: INSUFFICIENT_INPUT_AMOUNT
 
         {
             // scope for reserve{0,1}Adjusted, avoids stack too deep errors

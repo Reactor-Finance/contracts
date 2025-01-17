@@ -6,10 +6,6 @@ import {IPair} from "../interfaces/IPair.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 
 contract PairFactory is IPairFactory {
-    bool public isPaused;
-    address public pauser;
-    address public pendingPauser;
-
     uint256 public stableFee;
     uint256 public volatileFee;
     uint256 public stakingNFTFee;
@@ -45,21 +41,6 @@ contract PairFactory is IPairFactory {
 
     function pairs() external view returns (address[] memory) {
         return allPairs;
-    }
-
-    function setPauser(address _pauser) external {
-        require(msg.sender == pauser);
-        pendingPauser = _pauser;
-    }
-
-    function acceptPauser() external {
-        require(msg.sender == pendingPauser);
-        pauser = pendingPauser;
-    }
-
-    function setPause(bool _state) external {
-        require(msg.sender == pauser);
-        isPaused = _state;
     }
 
     function setFeeManager(address _feeManager) external {
