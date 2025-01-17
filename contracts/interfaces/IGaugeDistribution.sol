@@ -12,6 +12,6 @@ interface IGaugeDistribution {
     function totalSupply() external view returns (uint);
     function earned(address token, address account) external view returns (uint);
 
-    function internal_bribe() external view returns(address);
-    function TOKEN() external view returns(address);
+    function internal_bribe() external view returns (address);
+    function TOKEN() external view returns (address);
 }

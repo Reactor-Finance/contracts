@@ -1,12 +1,12 @@
 require("@nomiclabs/hardhat-waffle");
 
-require('@openzeppelin/hardhat-upgrades');
+require("@openzeppelin/hardhat-upgrades");
 
 require("@nomiclabs/hardhat-etherscan");
 
 require("@nomiclabs/hardhat-web3");
 
-const { PRIVATEKEY, APIKEY } = require("./pvkey.js")
+const { PRIVATEKEY, APIKEY } = require("./pvkey.js");
 
 module.exports = {
   // latest Solidity version
@@ -17,24 +17,23 @@ module.exports = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 200,
-          },
-        },
+            runs: 200
+          }
+        }
       },
       {
         version: "0.7.0",
         settings: {
           optimizer: {
             enabled: true,
-            runs: 200,
-          },
-        },
-      },
+            runs: 200
+          }
+        }
+      }
     ]
   },
 
   networks: {
-
     bsc: {
       url: "https://bsc-dataseed1.binance.org",
       chainId: 56,
@@ -47,22 +46,19 @@ module.exports = {
       accounts: PRIVATEKEY
     },
 
-
     op: {
       url: "https://mainnet.optimism.io",
       chainId: 10,
       accounts: PRIVATEKEY
     },
-    
 
     hardhat: {
       forking: {
-          url: "https://bsc-dataseed1.binance.org",
-          chainId: 56,
-      },
+        url: "https://bsc-dataseed1.binance.org",
+        chainId: 56
+      }
       //accounts: []
     }
-  
   },
 
   etherscan: {
@@ -74,5 +70,4 @@ module.exports = {
   mocha: {
     timeout: 100000000
   }
-
-}
+};

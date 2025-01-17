@@ -1,30 +1,25 @@
-const { ethers  } = require('hardhat');
+const { ethers } = require("hardhat");
 
-
-
-
-async function main () {
-
+async function main() {
   accounts = await ethers.getSigners();
-  owner = accounts[0]
+  owner = accounts[0];
 
-  console.log('Deploying Contract...');
+  console.log("Deploying Contract...");
 
   data = await ethers.getContractFactory("PairFactory");
   pairFactory = await data.deploy();
   txDeployed = await pairFactory.deployed();
-  console.log("pairFactory: ", pairFactory.address)
+  console.log("pairFactory: ", pairFactory.address);
 
   data = await ethers.getContractFactory("GaugeFactory");
   gaugeFactory = await data.deploy();
   txDeployed = await gaugeFactory.deployed();
-  console.log("gaugeFactory: ", gaugeFactory.address)
+  console.log("gaugeFactory: ", gaugeFactory.address);
 
   data = await ethers.getContractFactory("BribeFactory");
   bribeFactory = await data.deploy();
   txDeployed = await bribeFactory.deployed();
-  console.log("bribeFactory: ", bribeFactory.address)
-
+  console.log("bribeFactory: ", bribeFactory.address);
 }
 
 main()

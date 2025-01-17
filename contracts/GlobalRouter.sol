@@ -16,13 +16,16 @@ interface ITradeHelper {
     }
     function getAmountOutStable(uint amountIn, address tokenIn, address tokenOut) external view returns (uint amount);
     function getAmountOutVolatile(uint amountIn, address tokenIn, address tokenOut) external view returns (uint amount);
-    function getAmountOut(uint amountIn, address tokenIn, address tokenOut) external view returns (uint amount, bool stable);
+    function getAmountOut(
+        uint amountIn,
+        address tokenIn,
+        address tokenOut
+    ) external view returns (uint amount, bool stable);
     function getAmountsOut(uint amountIn, Route[] memory routes) external view returns (uint[] memory amounts);
     function getAmountInStable(uint amountOut, address tokenIn, address tokenOut) external view returns (uint amountIn);
     function pairFor(address tokenA, address tokenB, bool stable) external view returns (address pair);
     function sortTokens(address tokenA, address tokenB) external pure returns (address token0, address token1);
 }
-
 
 interface IBaseV1Factory {
     function allPairsLength() external view returns (uint);
@@ -53,10 +56,9 @@ interface ERC20 {
 }
 
 interface IPairFactory {
-    function getFee(bool _stable) external view returns(uint256);
-    function MAX_REFERRAL_FEE() external view returns(uint256);
+    function getFee(bool _stable) external view returns (uint256);
+    function MAX_REFERRAL_FEE() external view returns (uint256);
 }
-
 
 library Math {
     function min(uint a, uint b) internal pure returns (uint) {
@@ -75,7 +77,7 @@ library Math {
         }
     }
     function sub(uint x, uint y) internal pure returns (uint z) {
-        require((z = x - y) <= x, 'Math: Sub-underflow');
+        require((z = x - y) <= x, "Math: Sub-underflow");
     }
 }
 
@@ -151,23 +153,18 @@ interface IRouterV3 {
     /// @dev Unlike standard swaps, handles transferring from user before the actual swap.
     /// @param params The parameters necessary for the multi-hop swap, encoded as `ExactInputParams` in calldata
     /// @return amountOut The amount of the received token
-    function exactInputSingleSupportingFeeOnTransferTokens(ExactInputSingleParams calldata params)
-        external
-        returns (uint256 amountOut);
+    function exactInputSingleSupportingFeeOnTransferTokens(
+        ExactInputSingleParams calldata params
+    ) external returns (uint256 amountOut);
 }
 
-
 contract GlobalRouter {
-
-
     ITradeHelper public tradeHelper;
 
-
     modifier ensure(uint deadline) {
-        require(deadline >= block.timestamp, 'BaseV1Router: EXPIRED');
+        require(deadline >= block.timestamp, "BaseV1Router: EXPIRED");
         _;
     }
-
 
     constructor(address _tradeHelper) {
         tradeHelper = ITradeHelper(_tradeHelper);
@@ -177,41 +174,50 @@ contract GlobalRouter {
     // requires the initial amount to have already been sent to the first pair
     function _swap(uint[] memory amounts, ITradeHelper.Route[] memory routes, address _to) internal virtual {
         for (uint i = 0; i < routes.length; i++) {
-            (address token0,) = tradeHelper.sortTokens(routes[i].from, routes[i].to);
+            (address token0, ) = tradeHelper.sortTokens(routes[i].from, routes[i].to);
             uint amountOut = amounts[i + 1];
             (uint amount0Out, uint amount1Out) = routes[i].from == token0 ? (uint(0), amountOut) : (amountOut, uint(0));
-            address to = i < routes.length - 1 ? tradeHelper.pairFor(routes[i+1].from, routes[i+1].to, routes[i+1].stable) : _to;
+            address to = i < routes.length - 1
+                ? tradeHelper.pairFor(routes[i + 1].from, routes[i + 1].to, routes[i + 1].stable)
+                : _to;
             IBaseV1Pair(tradeHelper.pairFor(routes[i].from, routes[i].to, routes[i].stable)).swap(
-                amount0Out, amount1Out, to, new bytes(0)
+                amount0Out,
+                amount1Out,
+                to,
+                new bytes(0)
             );
-            //emit Swap(msg.sender,amounts[i],routes[i].from, _to, routes[i].stable); 
+            //emit Swap(msg.sender,amounts[i],routes[i].from, _to, routes[i].stable);
         }
     }
 
-
     /// @notice Swap a Token for a Token given the _type of pools
-    /// @param  _type       boolean true := sAMM/vAMM pools, false := algebra v3 
-    function swapExactTokensForTokens(uint amountIn,uint amountOutMin, ITradeHelper.Route[] calldata routes,address to,uint deadline, bool _type) external ensure(deadline) returns (uint[] memory amounts){
-        
-        if(_type == false){
-            
-
-        } else {
+    /// @param  _type       boolean true := sAMM/vAMM pools, false := algebra v3
+    function swapExactTokensForTokens(
+        uint amountIn,
+        uint amountOutMin,
+        ITradeHelper.Route[] calldata routes,
+        address to,
+        uint deadline,
+        bool _type
+    ) external ensure(deadline) returns (uint[] memory amounts) {
+        if (_type == false) {} else {
             amounts = tradeHelper.getAmountsOut(amountIn, routes);
-            require(amounts[amounts.length - 1] >= amountOutMin, 'BaseV1Router: INSUFFICIENT_OUTPUT_AMOUNT');
+            require(amounts[amounts.length - 1] >= amountOutMin, "BaseV1Router: INSUFFICIENT_OUTPUT_AMOUNT");
             address _pair = tradeHelper.pairFor(routes[0].from, routes[0].to, routes[0].stable);
             TransferHelper._safeTransferFromERC20(routes[0].from, msg.sender, _pair, amounts[0]);
             _swap(amounts, routes, to);
         }
-
     }
 
-
-    function exactInput(IRouterV3.ExactInputParams memory params)
+    function exactInput(
+        IRouterV3.ExactInputParams memory params
+    )
         external
         payable
-        /*checkDeadline(params.deadline)*/
-        returns (uint256 amountOut)
+        returns (
+            /*checkDeadline(params.deadline)*/
+            uint256 amountOut
+        )
     {
         address payer = msg.sender; // msg.sender pays for the first hop
 
@@ -242,65 +248,71 @@ contract GlobalRouter {
         require(amountOut >= params.amountOutMinimum, 'Too little received');*/
     }
 
-
-
-
-
-
-
     /* ----------------------------
     -------------------------------
             v2 pools helpers
     -------------------------------
     ---------------------------- */
-    
-    function getAmountOutStable(uint amountIn, address tokenIn, address tokenOut) external view returns (uint amount){
+
+    function getAmountOutStable(uint amountIn, address tokenIn, address tokenOut) external view returns (uint amount) {
         return tradeHelper.getAmountOutStable(amountIn, tokenIn, tokenOut);
     }
-    function getAmountOutVolatile(uint amountIn, address tokenIn, address tokenOut) external view returns (uint amount){
+    function getAmountOutVolatile(
+        uint amountIn,
+        address tokenIn,
+        address tokenOut
+    ) external view returns (uint amount) {
         return tradeHelper.getAmountOutVolatile(amountIn, tokenIn, tokenOut);
     }
-    function getAmountOut(uint amountIn, address tokenIn, address tokenOut) external view returns (uint amount, bool stable){
+    function getAmountOut(
+        uint amountIn,
+        address tokenIn,
+        address tokenOut
+    ) external view returns (uint amount, bool stable) {
         return tradeHelper.getAmountOut(amountIn, tokenIn, tokenOut);
     }
-    function getAmountsOut(uint amountIn, ITradeHelper.Route[] memory routes) external view returns (uint[] memory amounts){
+    function getAmountsOut(
+        uint amountIn,
+        ITradeHelper.Route[] memory routes
+    ) external view returns (uint[] memory amounts) {
         return tradeHelper.getAmountsOut(amountIn, routes);
     }
-    function getAmountInStable(uint amountOut, address tokenIn, address tokenOut) external view returns (uint amountIn){
+    function getAmountInStable(
+        uint amountOut,
+        address tokenIn,
+        address tokenOut
+    ) external view returns (uint amountIn) {
         return tradeHelper.getAmountInStable(amountOut, tokenIn, tokenOut);
     }
-    function pairFor(address tokenA, address tokenB, bool stable) external view returns (address pair){
+    function pairFor(address tokenA, address tokenB, bool stable) external view returns (address pair) {
         return tradeHelper.pairFor(tokenA, tokenB, stable);
     }
-    function sortTokens(address tokenA, address tokenB) external view returns (address token0, address token1){
+    function sortTokens(address tokenA, address tokenB) external view returns (address token0, address token1) {
         return tradeHelper.sortTokens(tokenA, tokenB);
     }
-
 
     /* ----------------------------
     -------------------------------
             transfer helpers
     -------------------------------
     ---------------------------- */
-    
+
     function _safeTransferFrom(address token, address from, address to, uint256 value) internal {
         require(token.code.length > 0);
-        (bool success, bytes memory data) =
-        token.call(abi.encodeWithSelector(ERC20.transferFrom.selector, from, to, value));
+        (bool success, bytes memory data) = token.call(
+            abi.encodeWithSelector(ERC20.transferFrom.selector, from, to, value)
+        );
         require(success && (data.length == 0 || abi.decode(data, (bool))));
     }
-    
+
     function _safeTransferETH(address to, uint value) internal {
-        (bool success,) = to.call{value:value}(new bytes(0));
-        require(success, 'TransferHelper: ETH_TRANSFER_FAILED');
+        (bool success, ) = to.call{value: value}(new bytes(0));
+        require(success, "TransferHelper: ETH_TRANSFER_FAILED");
     }
 
     function _safeTransfer(address token, address to, uint256 value) internal {
         require(token.code.length > 0);
-        (bool success, bytes memory data) =
-        token.call(abi.encodeWithSelector(ERC20.transfer.selector, to, value));
+        (bool success, bytes memory data) = token.call(abi.encodeWithSelector(ERC20.transfer.selector, to, value));
         require(success && (data.length == 0 || abi.decode(data, (bool))));
     }
-
-
 }

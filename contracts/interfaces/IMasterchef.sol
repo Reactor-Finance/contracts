@@ -2,7 +2,6 @@
 
 pragma solidity 0.8.13;
 
-
 interface IMasterchef {
-     function setDistributionRate(uint256 amount) external ;
+    function setDistributionRate(uint256 amount) external;
 }

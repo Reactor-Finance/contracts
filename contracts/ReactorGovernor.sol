@@ -14,7 +14,9 @@ contract ReactorGovernor is L2Governor, L2GovernorCountingSimple, L2GovernorVote
     uint256 public constant PROPOSAL_DENOMINATOR = 1000;
     uint256 public proposalNumerator = 2; // start at 0.02%
 
-    constructor(IVotes _ve)
+    constructor(
+        IVotes _ve
+    )
         L2Governor("Reactor Governor")
         L2GovernorVotes(_ve)
         L2GovernorVotesQuorumFraction(4) // 4%
@@ -41,7 +43,7 @@ contract ReactorGovernor is L2Governor, L2GovernorCountingSimple, L2GovernorVote
         proposalNumerator = numerator;
     }
 
-    function proposalThreshold() public view override(L2Governor) returns (uint256){
+    function proposalThreshold() public view override(L2Governor) returns (uint256) {
         return (token.getPastTotalSupply(block.timestamp) * proposalNumerator) / PROPOSAL_DENOMINATOR;
     }
 }

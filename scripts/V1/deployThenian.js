@@ -6,7 +6,7 @@ async function main() {
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
   const ThenianContract = await ethers.getContractFactory("Thenian");
-  const Thenian = await ThenianContract.deploy(3000, '2000000000000000000', 1669993200);
+  const Thenian = await ThenianContract.deploy(3000, "2000000000000000000", 1669993200);
 
   // Wait for this transaction to be mined
   await Thenian.deployed();

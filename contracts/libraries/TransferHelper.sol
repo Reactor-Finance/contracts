@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/Address.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 library TransferHelper {
     using Address for address;
@@ -18,7 +18,7 @@ library TransferHelper {
         address token,
         address to,
         uint256 amount
-    ) internal return (bytes memory _returnData){
+    ) internal return (bytes memory _returnData) {
         require(token.isContract(), "non contract call");
         _returnData = token.functionCall(
             abi.encodeWithSelector(transferSelector, to, amount)
@@ -39,6 +39,6 @@ library TransferHelper {
                 recipient,
                 amount
             )
-        );
+        )
     }
 }

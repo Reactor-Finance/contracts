@@ -52,16 +52,11 @@ contract MasterChef is Ownable {
     event Deposit(address indexed user, uint256 amount, address indexed to);
     event Withdraw(address indexed user, uint256 amount, address indexed to);
     event Harvest(address indexed user, uint256 amount);
-    event LogUpdatePool(
-        uint256 lastRewardTime,
-        uint256 nftSupply,
-        uint256 accRewardPerShare
-    );
+    event LogUpdatePool(uint256 lastRewardTime, uint256 nftSupply, uint256 accRewardPerShare);
     event LogRewardPerSecond(uint256 rewardPerSecond);
 
-
-    modifier onlyKeeper {
-        require(msg.sender == owner() || isKeeper[msg.sender],'not keeper'); 
+    modifier onlyKeeper() {
+        require(msg.sender == owner() || isKeeper[msg.sender], "not keeper");
         _;
     }
 
@@ -70,10 +65,7 @@ contract MasterChef is Ownable {
         NFT = _NFT;
         distributePeriod = 1 weeks;
         ACC_WBNB_PRECISION = 1e12;
-        poolInfo = PoolInfo({
-            lastRewardTime: block.timestamp,
-            accRewardPerShare: 0
-        });
+        poolInfo = PoolInfo({lastRewardTime: block.timestamp, accRewardPerShare: 0});
     }
 
     /// @notice add keepers
@@ -81,9 +73,9 @@ contract MasterChef is Ownable {
         uint256 i = 0;
         uint256 len = _keepers.length;
 
-        for(i; i < len; i++){
+        for (i; i < len; i++) {
             address _keeper = _keepers[i];
-            if(!isKeeper[_keeper]){
+            if (!isKeeper[_keeper]) {
                 isKeeper[_keeper] = true;
             }
         }
@@ -94,14 +86,13 @@ contract MasterChef is Ownable {
         uint256 i = 0;
         uint256 len = _keepers.length;
 
-        for(i; i < len; i++){
+        for (i; i < len; i++) {
             address _keeper = _keepers[i];
-            if(isKeeper[_keeper]){
+            if (isKeeper[_keeper]) {
                 isKeeper[_keeper] = false;
             }
         }
-    }  
-
+    }
 
     /// @notice Sets the reward per second to be distributed. Can only be called by the owner.
     /// @param _rewardPerSecond The amount of Reward to be distributed per second.
@@ -129,11 +120,7 @@ contract MasterChef is Ownable {
     /// @notice View function to see pending WBNB on frontend.
     /// @param _user Address of user.
     /// @return pending WBNB reward for a given user.
-    function pendingReward(address _user)
-        external
-        view
-        returns (uint256 pending)
-    {
+    function pendingReward(address _user) external view returns (uint256 pending) {
         PoolInfo memory pool = poolInfo;
         UserInfo storage user = userInfo[_user];
         uint256 accRewardPerShare = pool.accRewardPerShare;
@@ -141,23 +128,15 @@ contract MasterChef is Ownable {
         if (block.timestamp > pool.lastRewardTime && nftSupply != 0) {
             uint256 time = block.timestamp.sub(pool.lastRewardTime);
             uint256 reward = time.mul(rewardPerSecond);
-            accRewardPerShare = accRewardPerShare.add(
-                reward.mul(ACC_WBNB_PRECISION) / nftSupply
-            );
+            accRewardPerShare = accRewardPerShare.add(reward.mul(ACC_WBNB_PRECISION) / nftSupply);
         }
-        pending = int256(
-            user.amount.mul(accRewardPerShare) / ACC_WBNB_PRECISION
-        ).sub(user.rewardDebt).toUInt256();
+        pending = int256(user.amount.mul(accRewardPerShare) / ACC_WBNB_PRECISION).sub(user.rewardDebt).toUInt256();
     }
 
     /// @notice View function to see token Ids on frontend.
     /// @param _user Address of user.
     /// @return tokenIds Staked Token Ids for a given user.
-    function stakedTokenIds(address _user)
-        external
-        view
-        returns (uint256[] memory tokenIds)
-    {
+    function stakedTokenIds(address _user) external view returns (uint256[] memory tokenIds) {
         tokenIds = userInfo[_user].tokenIds;
     }
 
@@ -170,17 +149,11 @@ contract MasterChef is Ownable {
             if (nftSupply > 0) {
                 uint256 time = block.timestamp.sub(pool.lastRewardTime);
                 uint256 reward = time.mul(rewardPerSecond);
-                pool.accRewardPerShare = pool.accRewardPerShare.add(
-                    reward.mul(ACC_WBNB_PRECISION).div(nftSupply)
-                );
+                pool.accRewardPerShare = pool.accRewardPerShare.add(reward.mul(ACC_WBNB_PRECISION).div(nftSupply));
             }
             pool.lastRewardTime = block.timestamp;
             poolInfo = pool;
-            emit LogUpdatePool(
-                pool.lastRewardTime,
-                nftSupply,
-                pool.accRewardPerShare
-            );
+            emit LogUpdatePool(pool.lastRewardTime, nftSupply, pool.accRewardPerShare);
         }
     }
 
@@ -192,7 +165,7 @@ contract MasterChef is Ownable {
 
         // Effects
         user.amount = user.amount.add(tokenIds.length);
-        user.rewardDebt = user.rewardDebt.add( int256(tokenIds.length.mul(pool.accRewardPerShare) / ACC_WBNB_PRECISION) );
+        user.rewardDebt = user.rewardDebt.add(int256(tokenIds.length.mul(pool.accRewardPerShare) / ACC_WBNB_PRECISION));
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
             require(NFT.ownerOf(tokenIds[i]) == msg.sender, "This NTF does not belong to address");
@@ -214,11 +187,7 @@ contract MasterChef is Ownable {
         UserInfo storage user = userInfo[msg.sender];
 
         // Effects
-        user.rewardDebt = user.rewardDebt.sub(
-            int256(
-                tokenIds.length.mul(pool.accRewardPerShare) / ACC_WBNB_PRECISION
-            )
-        );
+        user.rewardDebt = user.rewardDebt.sub(int256(tokenIds.length.mul(pool.accRewardPerShare) / ACC_WBNB_PRECISION));
         user.amount = user.amount.sub(tokenIds.length);
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
@@ -242,12 +211,8 @@ contract MasterChef is Ownable {
     function harvest() public {
         PoolInfo memory pool = updatePool();
         UserInfo storage user = userInfo[msg.sender];
-        int256 accumulatedReward = int256(
-            user.amount.mul(pool.accRewardPerShare) / ACC_WBNB_PRECISION
-        );
-        uint256 _pendingReward = accumulatedReward
-            .sub(user.rewardDebt)
-            .toUInt256();
+        int256 accumulatedReward = int256(user.amount.mul(pool.accRewardPerShare) / ACC_WBNB_PRECISION);
+        uint256 _pendingReward = accumulatedReward.sub(user.rewardDebt).toUInt256();
 
         // Effects
         user.rewardDebt = accumulatedReward;

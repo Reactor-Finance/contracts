@@ -1,22 +1,16 @@
-const { ethers  } = require('hardhat');
+const { ethers } = require("hardhat");
 
-
-
-
-async function main () {
-
+async function main() {
   accounts = await ethers.getSigners();
-  owner = accounts[0]
-    
-  const voter = ethers.utils.getAddress("0xb594c0337580Bd06AFf6aB50973A7eF228616cbD")
+  owner = accounts[0];
 
+  const voter = ethers.utils.getAddress("0xb594c0337580Bd06AFf6aB50973A7eF228616cbD");
 
-  console.log('Deploying Contract...');
+  console.log("Deploying Contract...");
   data = await ethers.getContractFactory("WrappedExternalBribeFactory");
   wBribeFactory = await data.deploy(voter);
   txDeployed = await wBribeFactory.deployed();
-  console.log("wBribeFactory: ", wBribeFactory.address)
-
+  console.log("wBribeFactory: ", wBribeFactory.address);
 }
 
 main()

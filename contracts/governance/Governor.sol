@@ -14,9 +14,6 @@ import "@openzeppelin/contracts/utils/Timers.sol";
 import "@openzeppelin/contracts/governance/IGovernor.sol";
 import "@openzeppelin/contracts/governance/utils/IVotes.sol";
 
-
-
-
 /**
  * @author Modified from RollCall (https://github.com/withtally/rollcall/blob/main/src/standards/L2Governor.sol)
  *
@@ -318,7 +315,7 @@ abstract contract L2Governor is Context, ERC165, EIP712, IGovernor, IERC721Recei
      * @dev Internal execution mechanism. Can be overridden to implement different execution mechanism
      */
     function _execute(
-        uint256, /* proposalId */
+        uint256 /* proposalId */,
         address[] memory targets,
         uint256[] memory values,
         bytes[] memory calldatas,
@@ -335,9 +332,9 @@ abstract contract L2Governor is Context, ERC165, EIP712, IGovernor, IERC721Recei
      * @dev Hook before execution is triggered.
      */
     function _beforeExecute(
-        uint256, /* proposalId */
+        uint256 /* proposalId */,
         address[] memory targets,
-        uint256[] memory, /* values */
+        uint256[] memory /* values */,
         bytes[] memory calldatas,
         bytes32 /*descriptionHash*/
     ) internal virtual {
@@ -354,10 +351,10 @@ abstract contract L2Governor is Context, ERC165, EIP712, IGovernor, IERC721Recei
      * @dev Hook after execution is triggered.
      */
     function _afterExecute(
-        uint256, /* proposalId */
-        address[] memory, /* targets */
-        uint256[] memory, /* values */
-        bytes[] memory, /* calldatas */
+        uint256 /* proposalId */,
+        address[] memory /* targets */,
+        uint256[] memory /* values */,
+        bytes[] memory /* calldatas */,
         bytes32 /*descriptionHash*/
     ) internal virtual {
         if (_executor() != address(this)) {
@@ -544,11 +541,7 @@ abstract contract L2Governor is Context, ERC165, EIP712, IGovernor, IERC721Recei
      * in a governance proposal to recover tokens or Ether that was sent to the governor contract by mistake.
      * Note that if the executor is simply the governor itself, use of `relay` is redundant.
      */
-    function relay(
-        address target,
-        uint256 value,
-        bytes calldata data
-    ) external virtual onlyGovernance {
+    function relay(address target, uint256 value, bytes calldata data) external virtual onlyGovernance {
         Address.functionCallWithValue(target, data, value);
     }
 
@@ -563,12 +556,7 @@ abstract contract L2Governor is Context, ERC165, EIP712, IGovernor, IERC721Recei
     /**
      * @dev See {IERC721Receiver-onERC721Received}.
      */
-    function onERC721Received(
-        address,
-        address,
-        uint256,
-        bytes memory
-    ) public virtual override returns (bytes4) {
+    function onERC721Received(address, address, uint256, bytes memory) public virtual override returns (bytes4) {
         return this.onERC721Received.selector;
     }
 
@@ -645,16 +633,9 @@ abstract contract L2GovernorCountingSimple is L2Governor {
     /**
      * @dev Accessor to the internal vote counts.
      */
-    function proposalVotes(uint256 proposalId)
-        public
-        view
-        virtual
-        returns (
-            uint256 againstVotes,
-            uint256 forVotes,
-            uint256 abstainVotes
-        )
-    {
+    function proposalVotes(
+        uint256 proposalId
+    ) public view virtual returns (uint256 againstVotes, uint256 forVotes, uint256 abstainVotes) {
         ProposalVote storage proposalvote = _proposalVotes[proposalId];
         return (proposalvote.againstVotes, proposalvote.forVotes, proposalvote.abstainVotes);
     }
@@ -815,14 +796,17 @@ abstract contract L2GovernorVotesQuorumFraction is L2GovernorVotes {
     }
 }
 
-contract ReactorGovernor is L2Governor, L2GovernorCountingSimple, L2GovernorVotes,  L2GovernorVotesQuorumFraction {
+contract ReactorGovernor is L2Governor, L2GovernorCountingSimple, L2GovernorVotes, L2GovernorVotesQuorumFraction {
     address public team;
     uint256 public constant MAX_PROPOSAL_NUMERATOR = 50; // max 5%
     uint256 public constant PROPOSAL_DENOMINATOR = 1000;
     uint256 public proposalNumerator = 2; // start at 0.02%
 
     // _quorum = 10 -> 10%
-    constructor(IVotes _ve, uint _quorum) L2Governor("Reactor Governor") L2GovernorVotes(_ve) L2GovernorVotesQuorumFraction(_quorum) {
+    constructor(
+        IVotes _ve,
+        uint _quorum
+    ) L2Governor("Reactor Governor") L2GovernorVotes(_ve) L2GovernorVotesQuorumFraction(_quorum) {
         team = msg.sender;
     }
 

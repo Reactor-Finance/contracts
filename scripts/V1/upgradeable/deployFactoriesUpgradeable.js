@@ -1,15 +1,12 @@
-const { ethers  } = require('hardhat');
+const { ethers } = require("hardhat");
 
 const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants.js");
 
-
-
-async function main () {
-
+async function main() {
   accounts = await ethers.getSigners();
-  owner = accounts[0]
+  owner = accounts[0];
 
-  console.log('Deploying Contract...');
+  console.log("Deploying Contract...");
 
   /*data = await ethers.getContractFactory("BribeFactoryUpgradeable");
   bribeFactory = await upgrades.deployProxy(data,[], {initializer: 'initialize'});
@@ -22,15 +19,14 @@ async function main () {
   console.log("wrappedbribeFactory: ", wrappedbribeFactory.address)*/
 
   data = await ethers.getContractFactory("PairFactoryUpgradeable");
-  pairFactory = await upgrades.deployProxy(data,[], {initializer: 'initialize'});
+  pairFactory = await upgrades.deployProxy(data, [], { initializer: "initialize" });
   txDeployed = await pairFactory.deployed();
-  console.log("pairFactory: ", pairFactory.address)
+  console.log("pairFactory: ", pairFactory.address);
 
- /* data = await ethers.getContractFactory("GaugeFactoryUpgradeable");
+  /* data = await ethers.getContractFactory("GaugeFactoryUpgradeable");
   gaugeFactory = await upgrades.deployProxy(data,[], {initializer: 'initialize'});
   txDeployed = await gaugeFactory.deployed();
   console.log("gaugeFactory: ", gaugeFactory.address)*/
-
 }
 
 main()

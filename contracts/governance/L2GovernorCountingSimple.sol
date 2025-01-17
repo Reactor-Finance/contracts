@@ -49,16 +49,9 @@ abstract contract L2GovernorCountingSimple is L2Governor {
     /**
      * @dev Accessor to the internal vote counts.
      */
-    function proposalVotes(uint256 proposalId)
-        public
-        view
-        virtual
-        returns (
-            uint256 againstVotes,
-            uint256 forVotes,
-            uint256 abstainVotes
-        )
-    {
+    function proposalVotes(
+        uint256 proposalId
+    ) public view virtual returns (uint256 againstVotes, uint256 forVotes, uint256 abstainVotes) {
         ProposalVote storage proposalvote = _proposalVotes[proposalId];
         return (proposalvote.againstVotes, proposalvote.forVotes, proposalvote.abstainVotes);
     }

@@ -4,7 +4,6 @@ pragma solidity 0.8.13;
 import "./interfaces/IReactor.sol";
 
 contract Reactor is IReactor {
-
     string public constant name = "REACTOR";
     string public constant symbol = "RCT";
     uint8 public constant decimals = 18;
@@ -30,8 +29,7 @@ contract Reactor is IReactor {
         minter = _minter;
     }
 
-
-    // Initial mint: total 100M    
+    // Initial mint: total 100M
     function initialMint(address _recipient) external {
         require(msg.sender == minter && !initialMinted);
         initialMinted = true;
@@ -75,9 +73,8 @@ contract Reactor is IReactor {
     }
 
     function mint(address account, uint amount) external returns (bool) {
-        require(msg.sender == minter, 'not allowed');
+        require(msg.sender == minter, "not allowed");
         _mint(account, amount);
         return true;
     }
-
 }

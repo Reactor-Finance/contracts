@@ -2,7 +2,7 @@
 pragma solidity 0.8.13;
 
 interface IPermissionsRegistry {
-    function emergencyCouncil() external view returns(address);
-    function reactorTeamMultisig() external view returns(address);
-    function hasRole(bytes memory role, address caller) external view returns(bool);
+    function emergencyCouncil() external view returns (address);
+    function reactorTeamMultisig() external view returns (address);
+    function hasRole(bytes memory role, address caller) external view returns (bool);
 }

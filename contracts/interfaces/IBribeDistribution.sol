@@ -7,6 +7,6 @@ interface IBribeDistribution {
     function getRewardForOwner(uint tokenId, address[] memory tokens) external;
     function notifyRewardAmount(address token, uint amount) external;
     function left(address token) external view returns (uint);
-    function recoverERC20(address tokenAddress, uint256 tokenAmount) external ;
+    function recoverERC20(address tokenAddress, uint256 tokenAmount) external;
     function setOwner(address _owner) external;
 }

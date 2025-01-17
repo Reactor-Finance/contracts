@@ -6,14 +6,11 @@ import "../interfaces/IMinter.sol";
 import "../interfaces/IVoter.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-
-contract EpochController is AutomationCompatibleInterface, OwnableUpgradeable  {
-
+contract EpochController is AutomationCompatibleInterface, OwnableUpgradeable {
     address public automationRegistry;
 
     address public minter;
     address public voter;
-
 
     constructor() {}
 
@@ -24,14 +21,15 @@ contract EpochController is AutomationCompatibleInterface, OwnableUpgradeable  {
         automationRegistry = address(0x02777053d6764996e594c3E88AF1D58D5363a2e6);
     }
 
-
-    function checkUpkeep(bytes memory /*checkdata*/) public view override returns (bool upkeepNeeded, bytes memory /*performData*/) {
+    function checkUpkeep(
+        bytes memory /*checkdata*/
+    ) public view override returns (bool upkeepNeeded, bytes memory /*performData*/) {
         upkeepNeeded = IMinter(minter).check();
     }
 
     function performUpkeep(bytes calldata /*performData*/) external override {
-        require(msg.sender == automationRegistry || msg.sender == owner(), 'cannot execute');
-        (bool upkeepNeeded, ) = checkUpkeep('0');
+        require(msg.sender == automationRegistry || msg.sender == owner(), "cannot execute");
+        (bool upkeepNeeded, ) = checkUpkeep("0");
         require(upkeepNeeded, "condition not met");
         IVoter(voter).distributeAll();
     }
@@ -46,11 +44,8 @@ contract EpochController is AutomationCompatibleInterface, OwnableUpgradeable  {
         voter = _voter;
     }
 
-    function setMinter(address _minter ) external onlyOwner {
+    function setMinter(address _minter) external onlyOwner {
         require(_minter != address(0));
         minter = _minter;
     }
-
-
-
 }

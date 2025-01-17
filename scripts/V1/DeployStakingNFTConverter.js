@@ -1,25 +1,15 @@
-const { ethers  } = require('hardhat');
+const { ethers } = require("hardhat");
 
-
-
-
-async function main () {
-
+async function main() {
   accounts = await ethers.getSigners();
-  owner = accounts[0]
+  owner = accounts[0];
 
-  console.log('Deploying Contract...');
+  console.log("Deploying Contract...");
 
   data = await ethers.getContractFactory("StakingNFTFeeConverter");
   StakingNFTFeeConverter = await data.deploy();
   txDeployed = await StakingNFTFeeConverter.deployed();
-  console.log("StakingNFTFeeConverter: ", StakingNFTFeeConverter.address)  
-
-
-
-
-
-
+  console.log("StakingNFTFeeConverter: ", StakingNFTFeeConverter.address);
 }
 
 main()

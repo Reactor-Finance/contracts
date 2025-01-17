@@ -127,10 +127,10 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
                              METADATA STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    string constant public name = "veReactor";
-    string constant public symbol = "veRCT";
-    string constant public version = "1.0.0";
-    uint8 constant public decimals = 18;
+    string public constant name = "veReactor";
+    string public constant symbol = "veRCT";
+    string public constant version = "1.0.0";
+    uint8 public constant decimals = 18;
 
     function setTeam(address _team) external {
         require(msg.sender == team);
@@ -147,7 +147,13 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
     function tokenURI(uint _tokenId) external view returns (string memory) {
         require(idToOwner[_tokenId] != address(0), "Query for nonexistent token");
         LockedBalance memory _locked = locked[_tokenId];
-        return IVeArtProxy(artProxy)._tokenURI(_tokenId,_balanceOfNFT(_tokenId, block.timestamp),_locked.end,uint(int256(_locked.amount)));
+        return
+            IVeArtProxy(artProxy)._tokenURI(
+                _tokenId,
+                _balanceOfNFT(_tokenId, block.timestamp),
+                _locked.end,
+                uint(int256(_locked.amount))
+            );
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -277,12 +283,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
     ///      Throws if `_to` is the zero address.
     ///      Throws if `_from` is not the current owner.
     ///      Throws if `_tokenId` is not a valid NFT.
-    function _transferFrom(
-        address _from,
-        address _to,
-        uint _tokenId,
-        address _sender
-    ) internal {
+    function _transferFrom(address _from, address _to, uint _tokenId, address _sender) internal {
         require(attachments[_tokenId] == 0 && !voted[_tokenId], "attached");
         // Check requirements
         require(_isApprovedOrOwner(_sender, _tokenId));
@@ -309,11 +310,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
     /// @param _from The current owner of the NFT.
     /// @param _to The new owner.
     /// @param _tokenId The NFT to transfer.
-    function transferFrom(
-        address _from,
-        address _to,
-        uint _tokenId
-    ) external {
+    function transferFrom(address _from, address _to, uint _tokenId) external {
         _transferFrom(_from, _to, _tokenId, msg.sender);
     }
 
@@ -328,11 +325,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
     /// @param _from The current owner of the NFT.
     /// @param _to The new owner.
     /// @param _tokenId The NFT to transfer.
-    function safeTransferFrom(
-        address _from,
-        address _to,
-        uint _tokenId
-    ) external {
+    function safeTransferFrom(address _from, address _to, uint _tokenId) external {
         safeTransferFrom(_from, _to, _tokenId, "");
     }
 
@@ -359,12 +352,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
     /// @param _to The new owner.
     /// @param _tokenId The NFT to transfer.
     /// @param _data Additional data with no specified format, sent in call to `_to`.
-    function safeTransferFrom(
-        address _from,
-        address _to,
-        uint _tokenId,
-        bytes memory _data
-    ) public {
+    function safeTransferFrom(address _from, address _to, uint _tokenId, bytes memory _data) public {
         _transferFrom(_from, _to, _tokenId, msg.sender);
 
         if (_isContract(_to)) {
@@ -375,7 +363,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
                 }
             } catch (bytes memory reason) {
                 if (reason.length == 0) {
-                    revert('ERC721: transfer to non ERC721Receiver implementer');
+                    revert("ERC721: transfer to non ERC721Receiver implementer");
                 } else {
                     assembly {
                         revert(add(32, reason), mload(reason))
@@ -505,7 +493,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
         // Remove token
         //_removeTokenFrom(msg.sender, _tokenId);
         _removeTokenFrom(owner, _tokenId);
-        
+
         emit Transfer(owner, address(0), _tokenId);
     }
 
@@ -556,11 +544,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
     /// @param _tokenId NFT token ID. No user checkpoint if 0
     /// @param old_locked Pevious locked amount / end lock time for the user
     /// @param new_locked New locked amount / end lock time for the user
-    function _checkpoint(
-        uint _tokenId,
-        LockedBalance memory old_locked,
-        LockedBalance memory new_locked
-    ) internal {
+    function _checkpoint(uint _tokenId, LockedBalance memory old_locked, LockedBalance memory new_locked) internal {
         Point memory u_old;
         Point memory u_new;
         int128 old_dslope = 0;
@@ -726,7 +710,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
         _checkpoint(_tokenId, old_locked, _locked);
 
         address from = msg.sender;
-        if (_value != 0 && deposit_type != DepositType.MERGE_TYPE && deposit_type != DepositType.SPLIT_TYPE ) {
+        if (_value != 0 && deposit_type != DepositType.MERGE_TYPE && deposit_type != DepositType.SPLIT_TYPE) {
             assert(IERC20(token).transferFrom(from, address(this), _value));
         }
 
@@ -752,8 +736,8 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
         LockedBalance memory _locked = locked[_tokenId];
 
         require(_value > 0); // dev: need non-zero value
-        require(_locked.amount > 0, 'No existing lock found');
-        require(_locked.end > block.timestamp, 'Cannot add to expired lock. Withdraw');
+        require(_locked.amount > 0, "No existing lock found");
+        require(_locked.end > block.timestamp, "Cannot add to expired lock. Withdraw");
         _deposit_for(_tokenId, _value, 0, _locked, DepositType.DEPOSIT_FOR_TYPE);
     }
 
@@ -762,11 +746,11 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
     /// @param _lock_duration Number of seconds to lock tokens for (rounded down to nearest week)
     /// @param _to Address to deposit
     function _create_lock(uint _value, uint _lock_duration, address _to) internal returns (uint) {
-        uint unlock_time = (block.timestamp + _lock_duration) / WEEK * WEEK; // Locktime is rounded down to weeks
+        uint unlock_time = ((block.timestamp + _lock_duration) / WEEK) * WEEK; // Locktime is rounded down to weeks
 
         require(_value > 0); // dev: need non-zero value
-        require(unlock_time > block.timestamp, 'Can only lock until time in the future');
-        require(unlock_time <= block.timestamp + MAXTIME, 'Voting lock can be 2 years max');
+        require(unlock_time > block.timestamp, "Can only lock until time in the future");
+        require(unlock_time <= block.timestamp + MAXTIME, "Voting lock can be 2 years max");
 
         ++tokenId;
         uint _tokenId = tokenId;
@@ -799,8 +783,8 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
         LockedBalance memory _locked = locked[_tokenId];
 
         assert(_value > 0); // dev: need non-zero value
-        require(_locked.amount > 0, 'No existing lock found');
-        require(_locked.end > block.timestamp, 'Cannot add to expired lock. Withdraw');
+        require(_locked.amount > 0, "No existing lock found");
+        require(_locked.end > block.timestamp, "Cannot add to expired lock. Withdraw");
 
         _deposit_for(_tokenId, _value, 0, _locked, DepositType.INCREASE_LOCK_AMOUNT);
     }
@@ -811,12 +795,12 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
         assert(_isApprovedOrOwner(msg.sender, _tokenId));
 
         LockedBalance memory _locked = locked[_tokenId];
-        uint unlock_time = (block.timestamp + _lock_duration) / WEEK * WEEK; // Locktime is rounded down to weeks
+        uint unlock_time = ((block.timestamp + _lock_duration) / WEEK) * WEEK; // Locktime is rounded down to weeks
 
-        require(_locked.end > block.timestamp, 'Lock expired');
-        require(_locked.amount > 0, 'Nothing is locked');
-        require(unlock_time > _locked.end, 'Can only increase lock duration');
-        require(unlock_time <= block.timestamp + MAXTIME, 'Voting lock can be 2 years max');
+        require(_locked.end > block.timestamp, "Lock expired");
+        require(_locked.amount > 0, "Nothing is locked");
+        require(unlock_time > _locked.end, "Can only increase lock duration");
+        require(unlock_time <= block.timestamp + MAXTIME, "Voting lock can be 2 years max");
 
         _deposit_for(_tokenId, 0, unlock_time, _locked, DepositType.INCREASE_UNLOCK_TIME);
     }
@@ -831,14 +815,14 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
         require(block.timestamp >= _locked.end, "The lock didn't expire");
         uint value = uint(int256(_locked.amount));
 
-        locked[_tokenId] = LockedBalance(0,0);
+        locked[_tokenId] = LockedBalance(0, 0);
         uint supply_before = supply;
         supply = supply_before - value;
 
         // old_locked can have either expired <= timestamp or zero end
         // _locked has only 0 end
         // Both can have >= 0 amount
-        _checkpoint(_tokenId, _locked, LockedBalance(0,0));
+        _checkpoint(_tokenId, _locked, LockedBalance(0, 0));
 
         assert(IERC20(token).transfer(msg.sender, value));
 
@@ -1080,14 +1064,12 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
         _deposit_for(_to, value0, end, _locked1, DepositType.MERGE_TYPE);
     }
 
-
     /**
      * @notice split NFT into multiple
      * @param amounts   % of split
      * @param _tokenId  NFTs ID
      */
     function split(uint[] memory amounts, uint _tokenId) external {
-        
         // check permission and vote
         require(attachments[_tokenId] == 0 && !voted[_tokenId], "attached");
         require(_isApprovedOrOwner(msg.sender, _tokenId));
@@ -1098,13 +1080,13 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
         uint end = _locked.end;
         uint value = uint(int256(_locked.amount));
         require(value > 0); // dev: need non-zero value
-        
+
         // reset supply, _deposit_for increase it
         supply = supply - value;
 
         uint i;
         uint totalWeight = 0;
-        for(i = 0; i < amounts.length; i++){
+        for (i = 0; i < amounts.length; i++) {
             totalWeight += amounts[i];
         }
 
@@ -1115,19 +1097,18 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
 
         // save end
         uint unlock_time = end;
-        require(unlock_time > block.timestamp, 'Can only lock until time in the future');
-        require(unlock_time <= block.timestamp + MAXTIME, 'Voting lock can be 2 years max');
-        
-        // mint 
+        require(unlock_time > block.timestamp, "Can only lock until time in the future");
+        require(unlock_time <= block.timestamp + MAXTIME, "Voting lock can be 2 years max");
+
+        // mint
         uint _value = 0;
-        for(i = 0; i < amounts.length; i++){   
+        for (i = 0; i < amounts.length; i++) {
             ++tokenId;
             _tokenId = tokenId;
             _mint(_to, _tokenId);
-            _value = value * amounts[i] / totalWeight;
+            _value = (value * amounts[i]) / totalWeight;
             _deposit_for(_tokenId, _value, unlock_time, locked[_tokenId], DepositType.SPLIT_TYPE);
-        }     
-
+        }
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -1135,10 +1116,12 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
     //////////////////////////////////////////////////////////////*/
 
     /// @notice The EIP-712 typehash for the contract's domain
-    bytes32 public constant DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
+    bytes32 public constant DOMAIN_TYPEHASH =
+        keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
 
     /// @notice The EIP-712 typehash for the delegation struct used by the contract
-    bytes32 public constant DELEGATION_TYPEHASH = keccak256("Delegation(address delegatee,uint256 nonce,uint256 expiry)");
+    bytes32 public constant DELEGATION_TYPEHASH =
+        keccak256("Delegation(address delegatee,uint256 nonce,uint256 expiry)");
 
     /// @notice A record of each accounts delegate
     mapping(address => address) private _delegates;
@@ -1213,11 +1196,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
         return lower;
     }
 
-    function getPastVotes(address account, uint timestamp)
-        public
-        view
-        returns (uint)
-    {
+    function getPastVotes(address account, uint timestamp) public view returns (uint) {
         uint32 _checkIndex = getPastVotesIndex(account, timestamp);
         // Sum votes
         uint[] storage _tokenIds = checkpoints[account][_checkIndex].tokenIds;
@@ -1238,11 +1217,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
                              DAO VOTING LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function _moveTokenDelegates(
-        address srcRep,
-        address dstRep,
-        uint _tokenId
-    ) internal {
+    function _moveTokenDelegates(address srcRep, address dstRep, uint _tokenId) internal {
         if (srcRep != dstRep && _tokenId > 0) {
             if (srcRep != address(0)) {
                 uint32 srcRepNum = numCheckpoints[srcRep];
@@ -1250,9 +1225,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
                     ? checkpoints[srcRep][srcRepNum - 1].tokenIds
                     : checkpoints[srcRep][0].tokenIds;
                 uint32 nextSrcRepNum = _findWhatCheckpointToWrite(srcRep);
-                uint[] storage srcRepNew = checkpoints[srcRep][
-                    nextSrcRepNum
-                ].tokenIds;
+                uint[] storage srcRepNew = checkpoints[srcRep][nextSrcRepNum].tokenIds;
                 // All the same except _tokenId
                 for (uint i = 0; i < srcRepOld.length; i++) {
                     uint tId = srcRepOld[i];
@@ -1270,14 +1243,9 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
                     ? checkpoints[dstRep][dstRepNum - 1].tokenIds
                     : checkpoints[dstRep][0].tokenIds;
                 uint32 nextDstRepNum = _findWhatCheckpointToWrite(dstRep);
-                uint[] storage dstRepNew = checkpoints[dstRep][
-                    nextDstRepNum
-                ].tokenIds;
+                uint[] storage dstRepNew = checkpoints[dstRep][nextDstRepNum].tokenIds;
                 // All the same plus _tokenId
-                require(
-                    dstRepOld.length + 1 <= MAX_DELEGATES,
-                    "dstRep would have too many tokenIds"
-                );
+                require(dstRepOld.length + 1 <= MAX_DELEGATES, "dstRep would have too many tokenIds");
                 for (uint i = 0; i < dstRepOld.length; i++) {
                     uint tId = dstRepOld[i];
                     dstRepNew.push(tId);
@@ -1289,29 +1257,18 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
         }
     }
 
-    function _findWhatCheckpointToWrite(address account)
-        internal
-        view
-        returns (uint32)
-    {
+    function _findWhatCheckpointToWrite(address account) internal view returns (uint32) {
         uint _timestamp = block.timestamp;
         uint32 _nCheckPoints = numCheckpoints[account];
 
-        if (
-            _nCheckPoints > 0 &&
-            checkpoints[account][_nCheckPoints - 1].timestamp == _timestamp
-        ) {
+        if (_nCheckPoints > 0 && checkpoints[account][_nCheckPoints - 1].timestamp == _timestamp) {
             return _nCheckPoints - 1;
         } else {
             return _nCheckPoints;
         }
     }
 
-    function _moveAllDelegates(
-        address owner,
-        address srcRep,
-        address dstRep
-    ) internal {
+    function _moveAllDelegates(address owner, address srcRep, address dstRep) internal {
         // You can only redelegate what you own
         if (srcRep != dstRep) {
             if (srcRep != address(0)) {
@@ -1320,9 +1277,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
                     ? checkpoints[srcRep][srcRepNum - 1].tokenIds
                     : checkpoints[srcRep][0].tokenIds;
                 uint32 nextSrcRepNum = _findWhatCheckpointToWrite(srcRep);
-                uint[] storage srcRepNew = checkpoints[srcRep][
-                    nextSrcRepNum
-                ].tokenIds;
+                uint[] storage srcRepNew = checkpoints[srcRep][nextSrcRepNum].tokenIds;
                 // All the same except what owner owns
                 for (uint i = 0; i < srcRepOld.length; i++) {
                     uint tId = srcRepOld[i];
@@ -1340,14 +1295,9 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
                     ? checkpoints[dstRep][dstRepNum - 1].tokenIds
                     : checkpoints[dstRep][0].tokenIds;
                 uint32 nextDstRepNum = _findWhatCheckpointToWrite(dstRep);
-                uint[] storage dstRepNew = checkpoints[dstRep][
-                    nextDstRepNum
-                ].tokenIds;
+                uint[] storage dstRepNew = checkpoints[dstRep][nextDstRepNum].tokenIds;
                 uint ownerTokenCount = ownerToNFTokenCount[owner];
-                require(
-                    dstRepOld.length + ownerTokenCount <= MAX_DELEGATES,
-                    "dstRep would have too many tokenIds"
-                );
+                require(dstRepOld.length + ownerTokenCount <= MAX_DELEGATES, "dstRep would have too many tokenIds");
                 // All the same
                 for (uint i = 0; i < dstRepOld.length; i++) {
                     uint tId = dstRepOld[i];
@@ -1383,45 +1333,19 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes {
         return _delegate(msg.sender, delegatee);
     }
 
-    function delegateBySig(
-        address delegatee,
-        uint nonce,
-        uint expiry,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) public {
+    function delegateBySig(address delegatee, uint nonce, uint expiry, uint8 v, bytes32 r, bytes32 s) public {
         require(delegatee != msg.sender);
         require(delegatee != address(0));
-        
+
         bytes32 domainSeparator = keccak256(
-            abi.encode(
-                DOMAIN_TYPEHASH,
-                keccak256(bytes(name)),
-                keccak256(bytes(version)),
-                block.chainid,
-                address(this)
-            )
+            abi.encode(DOMAIN_TYPEHASH, keccak256(bytes(name)), keccak256(bytes(version)), block.chainid, address(this))
         );
-        bytes32 structHash = keccak256(
-            abi.encode(DELEGATION_TYPEHASH, delegatee, nonce, expiry)
-        );
-        bytes32 digest = keccak256(
-            abi.encodePacked("\x19\x01", domainSeparator, structHash)
-        );
+        bytes32 structHash = keccak256(abi.encode(DELEGATION_TYPEHASH, delegatee, nonce, expiry));
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
         address signatory = ecrecover(digest, v, r, s);
-        require(
-            signatory != address(0),
-            "VotingEscrow::delegateBySig: invalid signature"
-        );
-        require(
-            nonce == nonces[signatory]++,
-            "VotingEscrow::delegateBySig: invalid nonce"
-        );
-        require(
-            block.timestamp <= expiry,
-            "VotingEscrow::delegateBySig: signature expired"
-        );
+        require(signatory != address(0), "VotingEscrow::delegateBySig: invalid signature");
+        require(nonce == nonces[signatory]++, "VotingEscrow::delegateBySig: invalid nonce");
+        require(block.timestamp <= expiry, "VotingEscrow::delegateBySig: signature expired");
         return _delegate(signatory, delegatee);
     }
 }
