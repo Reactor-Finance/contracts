@@ -6,7 +6,6 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {TransferHelper} from "./libraries/TransferHelper.sol";
 import {SafeMath} from "./libraries/SafeMath.sol";
 import {IPair} from "./interfaces/IPair.sol";
@@ -346,68 +345,6 @@ contract Router {
                     "Router: INSUFFICIENT_OUTPUT_AMOUNT"
                 );
             } else _swap(amounts, routes, to);
-        }
-    }
-
-    function getAmountOutStable(uint amountIn, address tokenIn, address tokenOut) external view returns (uint amount) {
-        return tradeHelper.getAmountOutStable(amountIn, tokenIn, tokenOut);
-    }
-    function getAmountOutVolatile(
-        uint amountIn,
-        address tokenIn,
-        address tokenOut
-    ) external view returns (uint amount) {
-        return tradeHelper.getAmountOutVolatile(amountIn, tokenIn, tokenOut);
-    }
-    function getAmountOut(
-        uint amountIn,
-        address tokenIn,
-        address tokenOut
-    ) external view returns (uint amount, bool stable) {
-        return tradeHelper.getAmountOut(amountIn, tokenIn, tokenOut);
-    }
-    function getAmountsOut(
-        uint amountIn,
-        ITradeHelper.Route[] memory routes
-    ) external view returns (uint[] memory amounts) {
-        return tradeHelper.getAmountsOut(amountIn, routes);
-    }
-    function getAmountInStable(
-        uint amountOut,
-        address tokenIn,
-        address tokenOut
-    ) external view returns (uint amountIn) {
-        return tradeHelper.getAmountInStable(amountOut, tokenIn, tokenOut);
-    }
-    function pairFor(address tokenA, address tokenB, bool stable) external view returns (address pair) {
-        return tradeHelper.pairFor(tokenA, tokenB, stable);
-    }
-    function sortTokens(address tokenA, address tokenB) external view returns (address token0, address token1) {
-        return tradeHelper.sortTokens(tokenA, tokenB);
-    }
-
-    function _swapSupportingFeeOnTransferTokens(route[] calldata routes, address _to) internal virtual {
-        for (uint i; i < routes.length; i++) {
-            (address input, address output) = (routes[i].from, routes[i].to);
-            (address token0, ) = sortTokens(input, output);
-            IPair pair = IPair(pairFor(routes[i].from, routes[i].to, routes[i].stable));
-            uint amountInput;
-            uint amountOutput;
-            {
-                // scope to avoid stack too deep errors
-                (uint reserve0, uint reserve1, ) = pair.getReserves();
-                (uint reserveInput, ) = input == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
-                amountInput = erc20(input).balanceOf(address(pair)).sub(reserveInput);
-                (amountOutput, ) = getAmountOut(amountInput, input, output);
-            }
-            (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOutput) : (amountOutput, uint(0));
-            address to = i < routes.length - 1
-                ? pairFor(routes[i + 1].from, routes[i + 1].to, routes[i + 1].stable)
-                : _to;
-            pair.swap(amount0Out, amount1Out, to, new bytes(0));
-
-            bool _stable = routes[i].stable;
-            emit Swap(msg.sender, amountInput, input, _to, _stable);
         }
     }
 }
