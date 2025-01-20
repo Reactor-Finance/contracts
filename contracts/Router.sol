@@ -35,8 +35,27 @@ contract Router {
     // given some amount of an asset and pair reserves, returns an equivalent amount of the other asset
     function quoteLiquidity(uint amountA, uint reserveA, uint reserveB) internal pure returns (uint amountB) {
         require(amountA > 0, "Router: INSUFFICIENT_AMOUNT");
-        require(reserveA > 0 && reserveB > 0, "BRouter: INSUFFICIENT_LIQUIDITY");
+        require(reserveA > 0 && reserveB > 0, "Router: INSUFFICIENT_LIQUIDITY");
         amountB = (amountA * reserveB) / reserveA;
+    }
+
+    function quoteRemoveLiquidity(
+        address tokenA,
+        address tokenB,
+        bool stable,
+        uint liquidity
+    ) external view returns (uint amountA, uint amountB) {
+        address _pair = IPairFactory(factory).getPair(tokenA, tokenB, stable);
+
+        if (_pair == address(0)) {
+            return (0, 0);
+        }
+
+        (uint reserveA, uint reserveB) = getReserves(tokenA, tokenB, stable);
+        uint _totalSupply = IERC20(_pair).totalSupply();
+
+        amountA = (liquidity * reserveA) / _totalSupply; // using balances ensures pro-rata distribution
+        amountB = (liquidity * reserveB) / _totalSupply; // using balances ensures pro-rata distribution
     }
 
     // fetches and sorts the reserves for a pair
@@ -235,7 +254,6 @@ contract Router {
         uint amountBMin,
         address to,
         uint deadline,
-        bool withFeeOnTransferTokens,
         bool approveMax,
         uint8 v,
         bytes32 r,
@@ -391,87 +409,5 @@ contract Router {
             bool _stable = routes[i].stable;
             emit Swap(msg.sender, amountInput, input, _to, _stable);
         }
-    }
-    function swapExactTokensForTokensSupportingFeeOnTransferTokens(
-        uint amountIn,
-        uint amountOutMin,
-        route[] calldata routes,
-        address to,
-        uint deadline
-    ) external ensure(deadline) {
-        _safeTransferFrom(
-            routes[0].from,
-            msg.sender,
-            pairFor(routes[0].from, routes[0].to, routes[0].stable),
-            amountIn
-        );
-        uint balanceBefore = erc20(routes[routes.length - 1].to).balanceOf(to);
-        _swapSupportingFeeOnTransferTokens(routes, to);
-        require(
-            erc20(routes[routes.length - 1].to).balanceOf(to).sub(balanceBefore) >= amountOutMin,
-            "Router: INSUFFICIENT_OUTPUT_AMOUNT"
-        );
-    }
-    function swapExactETHForTokensSupportingFeeOnTransferTokens(
-        uint amountOutMin,
-        route[] calldata routes,
-        address to,
-        uint deadline
-    ) external payable ensure(deadline) {
-        require(routes[0].from == address(wETH), "Router: INVALID_PATH");
-        uint amountIn = msg.value;
-        wETH.deposit{value: amountIn}();
-        assert(wETH.transfer(pairFor(routes[0].from, routes[0].to, routes[0].stable), amountIn));
-        uint balanceBefore = erc20(routes[routes.length - 1].to).balanceOf(to);
-        _swapSupportingFeeOnTransferTokens(routes, to);
-        require(
-            erc20(routes[routes.length - 1].to).balanceOf(to).sub(balanceBefore) >= amountOutMin,
-            "Router: INSUFFICIENT_OUTPUT_AMOUNT"
-        );
-    }
-    function swapExactTokensForETHSupportingFeeOnTransferTokens(
-        uint amountIn,
-        uint amountOutMin,
-        route[] calldata routes,
-        address to,
-        uint deadline
-    ) external ensure(deadline) {
-        require(routes[routes.length - 1].to == address(wETH), "Router: INVALID_PATH");
-        _safeTransferFrom(
-            routes[0].from,
-            msg.sender,
-            pairFor(routes[0].from, routes[0].to, routes[0].stable),
-            amountIn
-        );
-        _swapSupportingFeeOnTransferTokens(routes, address(this));
-        uint amountOut = erc20(address(wETH)).balanceOf(address(this));
-        require(amountOut >= amountOutMin, "Router: INSUFFICIENT_OUTPUT_AMOUNT");
-        wETH.withdraw(amountOut);
-        _safeTransferETH(to, amountOut);
-    }
-
-    /* ----------------------------
-    -------------------------------
-            transfer helpers
-    -------------------------------
-    ---------------------------- */
-
-    function _safeTransferFrom(address token, address from, address to, uint256 value) internal {
-        require(token.code.length > 0);
-        (bool success, bytes memory data) = token.call(
-            abi.encodeWithSelector(ERC20.transferFrom.selector, from, to, value)
-        );
-        require(success && (data.length == 0 || abi.decode(data, (bool))));
-    }
-
-    function _safeTransferETH(address to, uint value) internal {
-        (bool success, ) = to.call{value: value}(new bytes(0));
-        require(success, "TransferHelper: ETH_TRANSFER_FAILED");
-    }
-
-    function _safeTransfer(address token, address to, uint256 value) internal {
-        require(token.code.length > 0);
-        (bool success, bytes memory data) = token.call(abi.encodeWithSelector(ERC20.transfer.selector, to, value));
-        require(success && (data.length == 0 || abi.decode(data, (bool))));
     }
 }
