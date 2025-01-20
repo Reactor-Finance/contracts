@@ -313,38 +313,45 @@ contract Router {
             require(amountIn == msg.value, "Router: AMOUNT_IN != MSG.VALUE");
             wETH.deposit{value: amounts[0]}();
             assert(wETH.transfer(_pair, amounts[0]));
-            if (withFeeOnTransferTokens) {
-                uint balanceBefore = IERC20(routes[routes.length - 1].to).balanceOf(to);
-                _swapSupportingFeeOnTransferTokens(routes, to);
-                require(
-                    IERC20(routes[routes.length - 1].to).balanceOf(to).sub(balanceBefore) >= amountOutMin,
-                    "Router: INSUFFICIENT_OUTPUT_AMOUNT"
-                );
-            } else _swap(amounts, routes, to);
+
+            {
+                if (withFeeOnTransferTokens) {
+                    uint balanceBefore = IERC20(routes[routes.length - 1].to).balanceOf(to);
+                    _swapSupportingFeeOnTransferTokens(routes, to);
+                    require(
+                        IERC20(routes[routes.length - 1].to).balanceOf(to).sub(balanceBefore) >= amountOutMin,
+                        "Router: INSUFFICIENT_OUTPUT_AMOUNT"
+                    );
+                } else _swap(amounts, routes, to);
+            }
         } else if (routes[routes.length - 1].to == address(wETH) || routes[routes.length - 1].to == ETHER) {
             TransferHelper._safeTransferFromERC20(routes[0].from, msg.sender, _pair, amounts[0]);
             uint sendAmount = amounts[amounts.length - 1];
 
-            if (withFeeOnTransferTokens) {
-                _swapSupportingFeeOnTransferTokens(routes, address(this));
-                uint amountOut = IERC20(address(wETH)).balanceOf(address(this));
-                require(amountOut >= amountOutMin, "Router: INSUFFICIENT_OUTPUT_AMOUNT");
-                sendAmount = amountOut;
-            } else _swap(amounts, routes, address(this));
+            {
+                if (withFeeOnTransferTokens) {
+                    _swapSupportingFeeOnTransferTokens(routes, address(this));
+                    uint amountOut = IERC20(address(wETH)).balanceOf(address(this));
+                    require(amountOut >= amountOutMin, "Router: INSUFFICIENT_OUTPUT_AMOUNT");
+                    sendAmount = amountOut;
+                } else _swap(amounts, routes, address(this));
+            }
 
             wETH.withdraw(sendAmount);
             TransferHelper._safeTransferEther(to, sendAmount);
         } else {
             TransferHelper._safeTransferFromERC20(routes[0].from, msg.sender, _pair, amounts[0]);
 
-            if (withFeeOnTransferTokens) {
-                uint balanceBefore = IERC20(routes[routes.length - 1].to).balanceOf(to);
-                _swapSupportingFeeOnTransferTokens(routes, to);
-                require(
-                    IERC20(routes[routes.length - 1].to).balanceOf(to).sub(balanceBefore) >= amountOutMin,
-                    "Router: INSUFFICIENT_OUTPUT_AMOUNT"
-                );
-            } else _swap(amounts, routes, to);
+            {
+                if (withFeeOnTransferTokens) {
+                    uint balanceBefore = IERC20(routes[routes.length - 1].to).balanceOf(to);
+                    _swapSupportingFeeOnTransferTokens(routes, to);
+                    require(
+                        IERC20(routes[routes.length - 1].to).balanceOf(to).sub(balanceBefore) >= amountOutMin,
+                        "Router: INSUFFICIENT_OUTPUT_AMOUNT"
+                    );
+                } else _swap(amounts, routes, to);
+            }
         }
     }
 }
