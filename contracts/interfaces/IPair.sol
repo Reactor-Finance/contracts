@@ -7,7 +7,6 @@ interface IPair {
     function tokens() external view returns (address, address);
     function token0() external view returns (address);
     function token1() external view returns (address);
-    function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external;
     function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external;
     function burn(address to) external returns (uint amount0, uint amount1);
     function mint(address to) external returns (uint liquidity);
@@ -19,4 +18,6 @@ interface IPair {
 
     function isStable() external view returns (bool);
     function initialize(address _token0, address _token1, bool _stable) external;
+    function reserve0() external view returns (uint);
+    function reserve1() external view returns (uint);
 }

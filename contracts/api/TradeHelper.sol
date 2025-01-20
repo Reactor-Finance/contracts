@@ -1,29 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import "../Pair.sol";
-import "../factories/PairFactory.sol";
-import "../PairFees.sol";
+import {IPair} from "../interfaces/IPair.sol";
+import {IPairFactory} from "../interfaces/IPairFactory.sol";
+import {PairFees} from "../PairFees.sol";
+import {ITradeHelper} from "./interfaces/ITradeHelper.sol";
 
-contract TradeHelper {
+contract TradeHelper is ITradeHelper {
     address public immutable factory;
-    bytes32 public immutable pairCodeHash;
-
-    struct Route {
-        address from;
-        address to;
-        bool stable;
-    }
 
     constructor(address _factory) {
         factory = _factory;
-        pairCodeHash = PairFactory(_factory).pairCodeHash();
     }
 
     function _sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
         require(tokenA != tokenB, "TradeHelper: IDENTICAL_ADDRESSES");
         (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
         require(token0 != address(0), "TradeHelper: ZERO_ADDRESS");
+        require(token1 != address(0), "TradeHelper: ZERO_ADDRESS");
     }
 
     function sortTokens(address tokenA, address tokenB) external pure returns (address token0, address token1) {
@@ -32,24 +26,11 @@ contract TradeHelper {
 
     function _pairFor(address tokenA, address tokenB, bool stable) internal view returns (address pair) {
         (address token0, address token1) = _sortTokens(tokenA, tokenB);
-        pair = address(
-            uint160(
-                uint256(
-                    keccak256(
-                        abi.encodePacked(
-                            hex"ff",
-                            factory,
-                            keccak256(abi.encodePacked(token0, token1, stable)),
-                            pairCodeHash // init code hash
-                        )
-                    )
-                )
-            )
-        );
+        pair = IPairFactory(factory).getPair(token0, token1, stable);
     }
 
     function pairFor(address tokenA, address tokenB, bool stable) external view returns (address pair) {
-        return _pairFor(tokenA, tokenB, stable);
+        pair = _pairFor(tokenA, tokenB, stable);
     }
 
     function _calculate_k(uint x, uint y) internal pure returns (uint) {
@@ -62,12 +43,12 @@ contract TradeHelper {
 
     function getAmountOutStable(uint amountIn, address tokenIn, address tokenOut) public view returns (uint amount) {
         address pair = _pairFor(tokenIn, tokenOut, true);
-        return (PairFactory(factory).isPair(pair)) ? Pair(pair).getAmountOut(amountIn, tokenIn) : 0;
+        return (IPairFactory(factory).isPair(pair)) ? IPair(pair).getAmountOut(amountIn, tokenIn) : 0;
     }
 
     function getAmountOutVolatile(uint amountIn, address tokenIn, address tokenOut) public view returns (uint amount) {
         address pair = _pairFor(tokenIn, tokenOut, false);
-        return (PairFactory(factory).isPair(pair)) ? Pair(pair).getAmountOut(amountIn, tokenIn) : 0;
+        return (IPairFactory(factory).isPair(pair)) ? IPair(pair).getAmountOut(amountIn, tokenIn) : 0;
     }
 
     function getAmountOut(
@@ -80,7 +61,10 @@ contract TradeHelper {
         return amountStable > amountVolatile ? (amountStable, true) : (amountVolatile, false);
     }
 
-    function getAmountsOut(uint amountIn, Route[] memory routes) public view returns (uint[] memory amounts) {
+    function getAmountsOut(
+        uint amountIn,
+        ITradeHelper.Route[] memory routes
+    ) public view returns (uint[] memory amounts) {
         require(routes.length >= 1, "TradeHelper: INVALID_PATH");
         amounts = new uint[](routes.length + 1);
         amounts[0] = amountIn;
@@ -93,8 +77,8 @@ contract TradeHelper {
         address pair = _pairFor(tokenIn, tokenOut, true);
 
         amountIn = type(uint256).max;
-        if (PairFactory(factory).isPair(pair)) {
-            Pair p = Pair(pair);
+        if (IPairFactory(factory).isPair(pair)) {
+            IPair p = IPair(pair);
 
             uint decimalsIn = 10 ** IERC20(tokenIn).decimals();
             uint decimalsOut = 10 ** IERC20(tokenOut).decimals();
@@ -135,7 +119,7 @@ contract TradeHelper {
             }
             //amountIn = (new_x_amount - old_x_amount) * (1+fees)
             uint amountInNoFees = (((reserveIn - x_1) * decimalsOut) / 1e18);
-            amountIn = (amountInNoFees * (10000 + PairFactory(factory).getFee(true))) / 10000;
+            amountIn = (amountInNoFees * (10000 + IPairFactory(factory).getFee(true))) / 10000;
         }
     }
 
@@ -147,14 +131,14 @@ contract TradeHelper {
         address pair = _pairFor(tokenIn, tokenOut, false);
         amountIn = type(uint256).max;
 
-        if (PairFactory(factory).isPair(pair)) {
-            Pair p = Pair(pair);
+        if (IPairFactory(factory).isPair(pair)) {
+            IPair p = IPair(pair);
 
             uint reserveIn = (tokenIn == p.token0()) ? p.reserve0() : p.reserve1();
             uint reserveOut = (tokenOut == p.token0()) ? p.reserve0() : p.reserve1();
 
             amountIn =
-                (((amountOut * reserveIn) / (reserveOut - amountOut)) * (10000 + PairFactory(factory).getFee(false))) /
+                (((amountOut * reserveIn) / (reserveOut - amountOut)) * (10000 + IPairFactory(factory).getFee(false))) /
                 10000;
         }
     }
@@ -169,7 +153,10 @@ contract TradeHelper {
         return amountStable < amountVolatile ? (amountStable, true) : (amountVolatile, false);
     }
 
-    function getAmountsIn(uint amountOut, Route[] memory routes) public view returns (uint[] memory amounts) {
+    function getAmountsIn(
+        uint amountOut,
+        ITradeHelper.Route[] memory routes
+    ) public view returns (uint[] memory amounts) {
         require(routes.length >= 1, "TradeHelper: INVALID_PATH");
         amounts = new uint[](routes.length + 1);
         amounts[routes.length] = amountOut;

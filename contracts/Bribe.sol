@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import "./interfaces/IMinter.sol";
-import "./interfaces/IVoter.sol";
-import "./interfaces/IVotingEscrow.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {IMinter} from "./interfaces/IMinter.sol";
+import {IVoter} from "./interfaces/IVoter.sol";
+import {IVotingEscrow} from "./interfaces/IVotingEscrow.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {IBribe} from "./interface/IBribe.sol";
 
-contract Bribe is ReentrancyGuard {
+contract Bribe is IBribe, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     uint256 public constant WEEK = 7 days; // rewards are released over 7 days
@@ -388,8 +389,6 @@ contract Bribe is ReentrancyGuard {
         minter = _minter;
     }
 
-    /// @notice Set a new Owner
-    event SetOwner(address indexed _owner);
     function setOwner(address _owner) external onlyAllowed {
         require(_owner != address(0));
         owner = _owner;
@@ -410,4 +409,5 @@ contract Bribe is ReentrancyGuard {
     event Withdrawn(uint256 indexed tokenId, uint256 amount);
     event RewardPaid(address indexed user, address indexed rewardsToken, uint256 reward);
     event Recovered(address indexed token, uint256 amount);
+    event SetOwner(address indexed _owner);
 }

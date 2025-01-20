@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
-import "./interfaces/IPair.sol";
-import "./interfaces/IBribe.sol";
-import "./libraries/Math.sol";
+import {IPair} from "./interfaces/IPair.sol";
+import {IBribe} from "./interfaces/IBribe.sol";
 
 interface IRewarder {
     function onReward(address user, address recipient, uint256 userBalance) external;
 }
 
-contract GaugeV2 is ReentrancyGuard, Ownable {
+contract Gauge is ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
 
     bool public immutable isForPair;
@@ -66,7 +66,7 @@ contract GaugeV2 is ReentrancyGuard, Ownable {
     }
 
     modifier isNotEmergency() {
-        require(emergency == false, "emergency");
+        require(!emergency, "emergency");
         _;
     }
 
@@ -80,8 +80,8 @@ contract GaugeV2 is ReentrancyGuard, Ownable {
         bool _isForPair
     ) {
         rewardToken = IERC20(_rewardToken); // main reward
-        VE = _ve; // vested
-        TOKEN = IERC20(_token); // underlying (LP)
+        VE = _ve; // voting escrow
+        TOKEN = IERC20(_token); // underlying (LP or custom ERC20)
         DISTRIBUTION = _distribution; // distro address (voter)
         DURATION = 7 days; // distro time
 
@@ -121,13 +121,13 @@ contract GaugeV2 is ReentrancyGuard, Ownable {
     }
 
     function activateEmergencyMode() external onlyOwner {
-        require(emergency == false, "emergency");
+        require(!emergency, "emergency");
         emergency = true;
         emit EmergencyActivated(address(this), block.timestamp);
     }
 
     function stopEmergencyMode() external onlyOwner {
-        require(emergency == true, "emergency");
+        require(emergency, "emergency");
 
         emergency = false;
         emit EmergencyDeactivated(address(this), block.timestamp);
@@ -207,7 +207,7 @@ contract GaugeV2 is ReentrancyGuard, Ownable {
         _balances[account] = _balances[account] + amount;
         _totalSupply = _totalSupply + amount;
 
-        if (address(gaugeRewarder) != address(0)) {
+        if (gaugeRewarder != address(0)) {
             IRewarder(gaugeRewarder).onReward(account, account, _balances[account]);
         }
 
@@ -234,7 +234,7 @@ contract GaugeV2 is ReentrancyGuard, Ownable {
         _totalSupply = _totalSupply - amount;
         _balances[msg.sender] = _balances[msg.sender] - amount;
 
-        if (address(gaugeRewarder) != address(0)) {
+        if (gaugeRewarder != address(0)) {
             IRewarder(gaugeRewarder).onReward(msg.sender, msg.sender, _balances[msg.sender]);
         }
 

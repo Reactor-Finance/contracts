@@ -16,4 +16,5 @@ interface IPairFactory {
     function MAX_FEE() external view returns (uint256);
     function feeManager() external view returns (address);
     function pendingFeeManager() external view returns (address);
+    function getFee(bool stable) external view returns (uint256);
 }

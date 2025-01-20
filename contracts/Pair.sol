@@ -169,7 +169,7 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
 
         // remove staking fees from lpfees
         amount -= _stakingNftFee;
-        uint256 _ratio = (amount * 1e18) / totalSupply; // 1e18 adjustment is removed during claim
+        uint256 _ratio = (amount * 1e18) / totalSupply(); // 1e18 adjustment is removed during claim
         if (_ratio > 0) {
             index0 += _ratio;
         }
@@ -193,7 +193,7 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
         // remove staking fees from lpfees
         amount -= _stakingNftFee;
 
-        uint256 _ratio = (amount * 1e18) / totalSupply;
+        uint256 _ratio = (amount * 1e18) / totalSupply();
 
         if (_ratio > 0) {
             index1 += _ratio;
@@ -205,7 +205,7 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
     // this function MUST be called on any balance changes, otherwise can be used to infinitely claim fees
     // Fees are segregated from core funds, so fees can never put liquidity at risk
     function _updateFor(address recipient) internal {
-        uint _supplied = balanceOf[recipient]; // get LP balance of `recipient`
+        uint _supplied = balanceOf(recipient); // get LP balance of `recipient`
         if (_supplied > 0) {
             uint _supplyIndex0 = supplyIndex0[recipient]; // get last adjusted index0 for recipient
             uint _supplyIndex1 = supplyIndex1[recipient];
@@ -337,7 +337,7 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
         uint _amount0 = _balance0 - _reserve0;
         uint _amount1 = _balance1 - _reserve1;
 
-        uint _totalSupply = totalSupply; // gas savings, must be defined here since totalSupply can update in _mintFee
+        uint _totalSupply = totalSupply(); // gas savings, must be defined here since totalSupply can update in _mintFee
         if (_totalSupply == 0) {
             liquidity = Math.sqrt(_amount0 * _amount1) - MINIMUM_LIQUIDITY;
             _mint(address(0), MINIMUM_LIQUIDITY); // permanently lock the first MINIMUM_LIQUIDITY tokens
@@ -358,9 +358,9 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
         (address _token0, address _token1) = (token0, token1);
         uint _balance0 = IERC20(_token0).balanceOf(address(this));
         uint _balance1 = IERC20(_token1).balanceOf(address(this));
-        uint _liquidity = balanceOf[address(this)];
+        uint _liquidity = balanceOf(address(this));
 
-        uint _totalSupply = totalSupply; // gas savings, must be defined here since totalSupply can update in _mintFee
+        uint _totalSupply = totalSupply(); // gas savings, must be defined here since totalSupply can update in _mintFee
         amount0 = (_liquidity * _balance0) / _totalSupply; // using balances ensures pro-rata distribution
         amount1 = (_liquidity * _balance1) / _totalSupply; // using balances ensures pro-rata distribution
         require(amount0 > 0 && amount1 > 0, "insufficient liquidity burned"); // Pair: INSUFFICIENT_LIQUIDITY_BURNED
@@ -492,31 +492,6 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
         } else {
             return x * y; // xy >= k
         }
-    }
-
-    function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external {
-        require(deadline >= block.timestamp, "Pair: EXPIRED");
-        DOMAIN_SEPARATOR = keccak256(
-            abi.encode(
-                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-                keccak256(bytes(name)),
-                keccak256(bytes("1")),
-                block.chainid,
-                address(this)
-            )
-        );
-        bytes32 digest = keccak256(
-            abi.encodePacked(
-                "\x19\x01",
-                DOMAIN_SEPARATOR,
-                keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, nonces[owner]++, deadline))
-            )
-        );
-        address recoveredAddress = ecrecover(digest, v, r, s);
-        require(recoveredAddress != address(0) && recoveredAddress == owner, "Pair: INVALID_SIGNATURE");
-        allowance[owner][spender] = value;
-
-        emit Approval(owner, spender, value);
     }
 
     function name() public view override returns (string memory) {

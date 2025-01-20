@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity 0.8.13;
 
-import "./libraries/Math.sol";
-import "./interfaces/IERC20.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {IERC20} from "@openzeppelin/contracts/token/erc20/IERC20.sol";
 import "./interfaces/IRewardsDistributor.sol";
 import "./interfaces/IVotingEscrow.sol";
 
