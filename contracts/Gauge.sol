@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity ^0.8.0;
 
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -78,7 +78,7 @@ contract Gauge is ReentrancyGuard, Ownable {
         address _internal_bribe,
         address _external_bribe,
         bool _isForPair
-    ) {
+    ) Ownable(msg.sender) {
         rewardToken = IERC20(_rewardToken); // main reward
         VE = _ve; // voting escrow
         TOKEN = IERC20(_token); // underlying (LP or custom ERC20)

@@ -1,22 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "../interfaces/IPermissionsRegistry.sol";
-import "../interfaces/IGaugeFactoryV2.sol";
-import "../GaugeV2.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {IPermissionsRegistry} from "../interfaces/IPermissionsRegistry.sol";
+import {IGaugeFactory} from "../interfaces/IGaugeFactory.sol";
+import {IGauge} from "../interfaces/IGauge.sol";
+import {Gauge} from "../Gauge.sol";
 
-interface IGauge {
-    function setDistribution(address _distro) external;
-    function activateEmergencyMode() external;
-    function stopEmergencyMode() external;
-    function setInternalBribe(address intbribe) external;
-    function setRewarderPid(uint256 pid) external;
-    function setGaugeRewarder(address _gr) external;
-    function setFeeVault(address _feeVault) external;
-}
-
-contract GaugeFactoryV2 is IGaugeFactory, OwnableUpgradeable {
+contract GaugeFactory is IGaugeFactory, OwnableUpgradeable {
     address public last_gauge;
     address public permissionsRegistry;
 
@@ -41,7 +32,7 @@ contract GaugeFactoryV2 is IGaugeFactory, OwnableUpgradeable {
         return __gauges.length;
     }
 
-    function createGaugeV2(
+    function createGauge(
         address _rewardToken,
         address _ve,
         address _token,
@@ -51,7 +42,7 @@ contract GaugeFactoryV2 is IGaugeFactory, OwnableUpgradeable {
         bool _isPair
     ) external returns (address) {
         last_gauge = address(
-            new GaugeV2(_rewardToken, _ve, _token, _distribution, _internal_bribe, _external_bribe, _isPair)
+            new Gauge(_rewardToken, _ve, _token, _distribution, _internal_bribe, _external_bribe, _isPair)
         );
         __gauges.push(last_gauge);
         return last_gauge;

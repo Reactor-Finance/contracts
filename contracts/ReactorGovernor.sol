@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity ^0.8.0;
 
-import {IGovernor} from "@openzeppelin/contracts/governance/IGovernor.sol";
+import {Governor} from "@openzeppelin/contracts/governance/Governor.sol";
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
-import {L2Governor} from "./governance/L2Governor.sol";
-import {L2GovernorCountingSimple} from "./governance/L2GovernorCountingSimple.sol";
-import {L2GovernorVotes} from "./governance/L2GovernorVotes.sol";
-import {L2GovernorVotesQuorumFraction} from "./governance/L2GovernorVotesQuorumFraction.sol";
+import {GovernorCountingSimple} from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
+import {GovernorVotes} from "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
+import {GovernorVotesQuorumFraction} from "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
 
-contract ReactorGovernor is L2Governor, L2GovernorCountingSimple, L2GovernorVotes, L2GovernorVotesQuorumFraction {
+contract ReactorGovernor is Governor, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction {
     address public team;
     uint256 public constant MAX_PROPOSAL_NUMERATOR = 100; // max 10%
     uint256 public constant PROPOSAL_DENOMINATOR = 1000;
@@ -17,18 +16,18 @@ contract ReactorGovernor is L2Governor, L2GovernorCountingSimple, L2GovernorVote
     constructor(
         IVotes _ve
     )
-        L2Governor("Reactor Governor")
-        L2GovernorVotes(_ve)
-        L2GovernorVotesQuorumFraction(4) // 4%
+        Governor("Reactor Governor")
+        GovernorVotes(_ve)
+        GovernorVotesQuorumFraction(4) // 4%
     {
         team = msg.sender;
     }
 
-    function votingDelay() public pure override(IGovernor) returns (uint256) {
+    function votingDelay() public pure override(Governor) returns (uint256) {
         return 15 minutes; // 1 block
     }
 
-    function votingPeriod() public pure override(IGovernor) returns (uint256) {
+    function votingPeriod() public pure override(Governor) returns (uint256) {
         return 1 weeks;
     }
 
@@ -43,7 +42,7 @@ contract ReactorGovernor is L2Governor, L2GovernorCountingSimple, L2GovernorVote
         proposalNumerator = numerator;
     }
 
-    function proposalThreshold() public view override(L2Governor) returns (uint256) {
-        return (token.getPastTotalSupply(block.timestamp) * proposalNumerator) / PROPOSAL_DENOMINATOR;
+    function proposalThreshold() public view override(Governor) returns (uint256) {
+        return (token().getPastTotalSupply(block.timestamp) * proposalNumerator) / PROPOSAL_DENOMINATOR;
     }
 }

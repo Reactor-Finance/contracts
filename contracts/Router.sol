@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity ^0.8.0;
 
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
@@ -44,7 +44,7 @@ contract Router {
         bool stable,
         uint liquidity
     ) external view returns (uint amountA, uint amountB) {
-        address _pair = IPairFactory(factory).getPair(tokenA, tokenB, stable);
+        address _pair = IPairFactory(tradeHelper.factory()).getPair(tokenA, tokenB, stable);
 
         if (_pair == address(0)) {
             return (0, 0);
@@ -82,8 +82,6 @@ contract Router {
                 to,
                 new bytes(0)
             );
-
-            emit Swap(msg.sender, amounts[0], routes[i].from, to, routes[i].stable);
         }
     }
 
@@ -106,9 +104,6 @@ contract Router {
                 ? tradeHelper.pairFor(routes[i + 1].from, routes[i + 1].to, routes[i + 1].stable)
                 : _to;
             pair.swap(amount0Out, amount1Out, to, new bytes(0));
-
-            bool _stable = routes[i].stable;
-            emit Swap(msg.sender, amountInput, input, to, _stable);
         }
     }
 
@@ -126,7 +121,7 @@ contract Router {
 
         address _pair = tradeHelper.pairFor(tokenA, tokenB, stable);
         if (_pair == address(0)) {
-            _pair = IPairFactory(factory).createPair(tokenA, tokenB, stable);
+            _pair = IPairFactory(tradeHelper.factory()).createPair(tokenA, tokenB, stable);
         }
         (uint reserveA, uint reserveB) = getReserves(tokenA, tokenB, stable);
         if (reserveA == 0 && reserveB == 0) {
@@ -211,10 +206,12 @@ contract Router {
         address pair = tradeHelper.pairFor(tokenA, tokenB, stable);
         TransferHelper._safeTransferFromERC20(pair, msg.sender, pair, liquidity);
         (uint amount0, uint amount1) = IPair(pair).burn(to);
-        (address token0, ) = tradeHelper.sortTokens(tokenA, tokenB);
-        (amountA, amountB) = tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
-        require(amountA >= amountAMin, "Router: INSUFFICIENT_A_AMOUNT");
-        require(amountB >= amountBMin, "Router: INSUFFICIENT_B_AMOUNT");
+        {
+            (address token0, ) = tradeHelper.sortTokens(tokenA, tokenB);
+            (amountA, amountB) = tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
+            require(amountA >= amountAMin, "Router: INSUFFICIENT_A_AMOUNT");
+            require(amountB >= amountBMin, "Router: INSUFFICIENT_B_AMOUNT");
+        }
     }
 
     function removeLiquidityETH(

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity 0.8.13;
+pragma solidity ^0.8.0;
 
 import {IReactor} from "./interfaces/IReactor.sol";
-import {ERC20} from "@openzeppelin/contracts/token/erc20/ERC20.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 
 contract Reactor is IReactor, ERC20Permit {

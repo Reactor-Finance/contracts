@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity ^0.8.0;
 
 import {IERC721, IERC721Metadata} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IVeArtProxy} from "./interfaces/IVeArtProxy.sol";
 import {IVotingEscrow} from "./interfaces/IVotingEscrow.sol";
 
@@ -56,7 +56,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
     address public team;
     address public artProxy;
 
-    mapping(uint => IVotingEscrow.Point) public point_history; // epoch -> unsigned point
+    mapping(uint => IVotingEscrow.Point) private _point_history; // epoch -> unsigned point
 
     /// @dev Mapping of interface id to bool about whether or not it's supported
     mapping(bytes4 => bool) internal supportedInterfaces;
@@ -81,8 +81,8 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
         team = msg.sender;
         artProxy = art_proxy;
 
-        point_history[0].blk = block.number;
-        point_history[0].ts = block.timestamp;
+        _point_history[0].blk = block.number;
+        _point_history[0].ts = block.timestamp;
 
         supportedInterfaces[ERC165_INTERFACE_ID] = true;
         supportedInterfaces[ERC721_INTERFACE_ID] = true;
@@ -117,13 +117,13 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
     /// @param _tokenId Token ID to fetch URI for.
     function tokenURI(uint _tokenId) external view returns (string memory) {
         require(idToOwner[_tokenId] != address(0), "Query for nonexistent token");
-        IVotingEscrow.LockedBalance memory _locked = locked[_tokenId];
+        IVotingEscrow.LockedBalance memory __locked = _locked[_tokenId];
         return
             IVeArtProxy(artProxy)._tokenURI(
                 _tokenId,
                 _balanceOfNFT(_tokenId, block.timestamp),
-                _locked.end,
-                uint(int256(_locked.amount))
+                __locked.end,
+                uint(int256(__locked.amount))
             );
     }
 
@@ -139,7 +139,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
 
     /// @dev Returns the address of the owner of the NFT.
     /// @param _tokenId The identifier for an NFT.
-    function ownerOf(uint _tokenId) public view returns (address) {
+    function ownerOf(uint _tokenId) public view override(IERC721, IVotingEscrow) returns (address) {
         return idToOwner[_tokenId];
     }
 
@@ -153,7 +153,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
     /// @dev Returns the number of NFTs owned by `_owner`.
     ///      Throws if `_owner` is the zero address. NFTs assigned to the zero address are considered invalid.
     /// @param _owner Address for whom to query the balance.
-    function balanceOf(address _owner) external view returns (uint) {
+    function balanceOf(address _owner) external view override(IERC721, IVotingEscrow) returns (uint) {
         return _balance(_owner);
     }
 
@@ -180,6 +180,10 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
     /// @param _operator The address that acts on behalf of the owner.
     function isApprovedForAll(address _owner, address _operator) external view returns (bool) {
         return (ownerToOperators[_owner])[_operator];
+    }
+
+    function point_history(uint loc) public view returns (IVotingEscrow.Point memory) {
+        return _point_history[loc];
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -281,7 +285,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
     /// @param _from The current owner of the NFT.
     /// @param _to The new owner.
     /// @param _tokenId The NFT to transfer.
-    function transferFrom(address _from, address _to, uint _tokenId) external {
+    function transferFrom(address _from, address _to, uint _tokenId) external override(IERC721, IVotingEscrow) {
         _transferFrom(_from, _to, _tokenId, msg.sender);
     }
 
@@ -473,8 +477,8 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
     //////////////////////////////////////////////////////////////*/
 
     mapping(uint => uint) public user_point_epoch;
-    mapping(uint => IVotingEscrow.Point[1000000000]) public user_point_history; // user -> Point[user_epoch]
-    mapping(uint => IVotingEscrow.LockedBalance) public locked;
+    mapping(uint => IVotingEscrow.Point[1000000000]) private _user_point_history;
+    mapping(uint => IVotingEscrow.LockedBalance) private _locked;
     uint public epoch;
     mapping(uint => int128) public slope_changes; // time -> signed slope change
     uint public supply;
@@ -493,32 +497,32 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
     /// @return Value of the slope
     function get_last_user_slope(uint _tokenId) external view returns (int128) {
         uint uepoch = user_point_epoch[_tokenId];
-        return user_point_history[_tokenId][uepoch].slope;
+        return _user_point_history[_tokenId][uepoch].slope;
     }
 
     /// @notice Get the timestamp for checkpoint `_idx` for `_tokenId`
     /// @param _tokenId token of the NFT
     /// @param _idx User epoch number
     /// @return Epoch time of the checkpoint
-    function user_point_history__ts(uint _tokenId, uint _idx) external view returns (uint) {
-        return user_point_history[_tokenId][_idx].ts;
+    function _user_point_history__ts(uint _tokenId, uint _idx) external view returns (uint) {
+        return _user_point_history[_tokenId][_idx].ts;
     }
 
     /// @notice Get timestamp when `_tokenId`'s lock finishes
     /// @param _tokenId User NFT
     /// @return Epoch time of the lock end
-    function locked__end(uint _tokenId) external view returns (uint) {
-        return locked[_tokenId].end;
+    function _locked__end(uint _tokenId) external view returns (uint) {
+        return _locked[_tokenId].end;
     }
 
     /// @notice Record global and per-user data to checkpoint
     /// @param _tokenId NFT token ID. No user checkpoint if 0
-    /// @param old_locked Pevious locked amount / end lock time for the user
-    /// @param new_locked New locked amount / end lock time for the user
+    /// @param old__locked Pevious _locked amount / end lock time for the user
+    /// @param new__locked New _locked amount / end lock time for the user
     function _checkpoint(
         uint _tokenId,
-        IVotingEscrow.LockedBalance memory old_locked,
-        IVotingEscrow.LockedBalance memory new_locked
+        IVotingEscrow.LockedBalance memory old__locked,
+        IVotingEscrow.LockedBalance memory new__locked
     ) internal {
         IVotingEscrow.Point memory u_old;
         IVotingEscrow.Point memory u_new;
@@ -529,24 +533,24 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
         if (_tokenId != 0) {
             // Calculate slopes and biases
             // Kept at zero when they have to
-            if (old_locked.end > block.timestamp && old_locked.amount > 0) {
-                u_old.slope = old_locked.amount / iMAXTIME;
-                u_old.bias = u_old.slope * int128(int256(old_locked.end - block.timestamp));
+            if (old__locked.end > block.timestamp && old__locked.amount > 0) {
+                u_old.slope = old__locked.amount / iMAXTIME;
+                u_old.bias = u_old.slope * int128(int256(old__locked.end - block.timestamp));
             }
-            if (new_locked.end > block.timestamp && new_locked.amount > 0) {
-                u_new.slope = new_locked.amount / iMAXTIME;
-                u_new.bias = u_new.slope * int128(int256(new_locked.end - block.timestamp));
+            if (new__locked.end > block.timestamp && new__locked.amount > 0) {
+                u_new.slope = new__locked.amount / iMAXTIME;
+                u_new.bias = u_new.slope * int128(int256(new__locked.end - block.timestamp));
             }
 
             // Read values of scheduled changes in the slope
-            // old_locked.end can be in the past and in the future
-            // new_locked.end can ONLY by in the FUTURE unless everything expired: than zeros
-            old_dslope = slope_changes[old_locked.end];
-            if (new_locked.end != 0) {
-                if (new_locked.end == old_locked.end) {
+            // old__locked.end can be in the past and in the future
+            // new__locked.end can ONLY by in the FUTURE unless everything expired: than zeros
+            old_dslope = slope_changes[old__locked.end];
+            if (new__locked.end != 0) {
+                if (new__locked.end == old__locked.end) {
                     new_dslope = old_dslope;
                 } else {
-                    new_dslope = slope_changes[new_locked.end];
+                    new_dslope = slope_changes[new__locked.end];
                 }
             }
         }
@@ -558,7 +562,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
             blk: block.number
         });
         if (_epoch > 0) {
-            last_point = point_history[_epoch];
+            last_point = _point_history[_epoch];
         }
         uint last_checkpoint = last_point.ts;
         // initial_last_point is used for extrapolation to calculate block number
@@ -603,13 +607,13 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
                     last_point.blk = block.number;
                     break;
                 } else {
-                    point_history[_epoch] = last_point;
+                    _point_history[_epoch] = last_point;
                 }
             }
         }
 
         epoch = _epoch;
-        // Now point_history is filled until t=now
+        // Now _point_history is filled until t=now
 
         if (_tokenId != 0) {
             // If last point was in this block, the slope change has been applied already
@@ -625,25 +629,25 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
         }
 
         // Record the changed point into history
-        point_history[_epoch] = last_point;
+        _point_history[_epoch] = last_point;
 
         if (_tokenId != 0) {
             // Schedule the slope changes (slope is going down)
-            // We subtract new_user_slope from [new_locked.end]
-            // and add old_user_slope to [old_locked.end]
-            if (old_locked.end > block.timestamp) {
+            // We subtract new_user_slope from [new__locked.end]
+            // and add old_user_slope to [old__locked.end]
+            if (old__locked.end > block.timestamp) {
                 // old_dslope was <something> - u_old.slope, so we cancel that
                 old_dslope += u_old.slope;
-                if (new_locked.end == old_locked.end) {
+                if (new__locked.end == old__locked.end) {
                     old_dslope -= u_new.slope; // It was a new deposit, not extension
                 }
-                slope_changes[old_locked.end] = old_dslope;
+                slope_changes[old__locked.end] = old_dslope;
             }
 
-            if (new_locked.end > block.timestamp) {
-                if (new_locked.end > old_locked.end) {
+            if (new__locked.end > block.timestamp) {
+                if (new__locked.end > old__locked.end) {
                     new_dslope -= u_new.slope; // old slope disappeared at this point
-                    slope_changes[new_locked.end] = new_dslope;
+                    slope_changes[new__locked.end] = new_dslope;
                 }
                 // else: we recorded it already in old_dslope
             }
@@ -653,7 +657,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
             user_point_epoch[_tokenId] = user_epoch;
             u_new.ts = block.timestamp;
             u_new.blk = block.number;
-            user_point_history[_tokenId][user_epoch] = u_new;
+            _user_point_history[_tokenId][user_epoch] = u_new;
         }
     }
 
@@ -661,40 +665,40 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
     /// @param _tokenId NFT that holds lock
     /// @param _value Amount to deposit
     /// @param unlock_time New time when to unlock the tokens, or 0 if unchanged
-    /// @param locked_balance Previous locked amount / timestamp
+    /// @param _locked_balance Previous _locked amount / timestamp
     /// @param deposit_type The type of deposit
     function _deposit_for(
         uint _tokenId,
         uint _value,
         uint unlock_time,
-        IVotingEscrow.LockedBalance memory locked_balance,
+        IVotingEscrow.LockedBalance memory _locked_balance,
         DepositType deposit_type
     ) internal {
-        IVotingEscrow.LockedBalance memory _locked = locked_balance;
+        IVotingEscrow.LockedBalance memory __locked = _locked_balance;
         uint supply_before = supply;
 
         supply = supply_before + _value;
-        IVotingEscrow.LockedBalance memory old_locked;
-        (old_locked.amount, old_locked.end) = (_locked.amount, _locked.end);
+        IVotingEscrow.LockedBalance memory old__locked;
+        (old__locked.amount, old__locked.end) = (__locked.amount, __locked.end);
         // Adding to existing lock, or if a lock is expired - creating a new one
-        _locked.amount += int128(int256(_value));
+        __locked.amount += int128(int256(_value));
         if (unlock_time != 0) {
-            _locked.end = unlock_time;
+            __locked.end = unlock_time;
         }
-        locked[_tokenId] = _locked;
+        _locked[_tokenId] = __locked;
 
         // Possibilities:
-        // Both old_locked.end could be current or expired (>/< block.timestamp)
+        // Both old__locked.end could be current or expired (>/< block.timestamp)
         // value == 0 (extend lock) or value > 0 (add to lock or extend lock)
-        // _locked.end > block.timestamp (always)
-        _checkpoint(_tokenId, old_locked, _locked);
+        // __locked.end > block.timestamp (always)
+        _checkpoint(_tokenId, old__locked, __locked);
 
         address from = msg.sender;
         if (_value != 0 && deposit_type != DepositType.MERGE_TYPE && deposit_type != DepositType.SPLIT_TYPE) {
             assert(IERC20(token).transferFrom(from, address(this), _value));
         }
 
-        emit Deposit(from, _tokenId, _value, _locked.end, deposit_type, block.timestamp);
+        emit Deposit(from, _tokenId, _value, __locked.end, deposit_type, block.timestamp);
         emit Supply(supply_before, supply_before + _value);
     }
 
@@ -704,7 +708,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
 
     /// @notice Record global data to checkpoint
     function checkpoint() external {
-        _checkpoint(0, LockedBalance(0, 0), LockedBalance(0, 0));
+        _checkpoint(0, IVotingEscrow.LockedBalance(0, 0), IVotingEscrow.LockedBalance(0, 0));
     }
 
     /// @notice Deposit `_value` tokens for `_tokenId` and add to the lock
@@ -713,12 +717,12 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
     /// @param _tokenId lock NFT
     /// @param _value Amount to add to user's lock
     function deposit_for(uint _tokenId, uint _value) external nonReentrant {
-        IVotingEscrow.LockedBalance memory _locked = locked[_tokenId];
+        IVotingEscrow.LockedBalance memory __locked = _locked[_tokenId];
 
         require(_value > 0); // dev: need non-zero value
-        require(_locked.amount > 0, "No existing lock found");
-        require(_locked.end > block.timestamp, "Cannot add to expired lock. Withdraw");
-        _deposit_for(_tokenId, _value, 0, _locked, DepositType.DEPOSIT_FOR_TYPE);
+        require(__locked.amount > 0, "No existing lock found");
+        require(__locked.end > block.timestamp, "Cannot add to expired lock. Withdraw");
+        _deposit_for(_tokenId, _value, 0, __locked, DepositType.DEPOSIT_FOR_TYPE);
     }
 
     /// @notice Deposit `_value` tokens for `_to` and lock for `_lock_duration`
@@ -736,7 +740,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
         uint _tokenId = tokenId;
         _mint(_to, _tokenId);
 
-        _deposit_for(_tokenId, _value, unlock_time, locked[_tokenId], DepositType.CREATE_LOCK_TYPE);
+        _deposit_for(_tokenId, _value, unlock_time, _locked[_tokenId], DepositType.CREATE_LOCK_TYPE);
         return _tokenId;
     }
 
@@ -760,13 +764,13 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
     function increase_amount(uint _tokenId, uint _value) external nonReentrant {
         assert(_isApprovedOrOwner(msg.sender, _tokenId));
 
-        IVotingEscrow.LockedBalance memory _locked = locked[_tokenId];
+        IVotingEscrow.LockedBalance memory __locked = _locked[_tokenId];
 
         assert(_value > 0); // dev: need non-zero value
-        require(_locked.amount > 0, "No existing lock found");
-        require(_locked.end > block.timestamp, "Cannot add to expired lock. Withdraw");
+        require(__locked.amount > 0, "No existing lock found");
+        require(__locked.end > block.timestamp, "Cannot add to expired lock. Withdraw");
 
-        _deposit_for(_tokenId, _value, 0, _locked, DepositType.INCREASE_LOCK_AMOUNT);
+        _deposit_for(_tokenId, _value, 0, __locked, DepositType.INCREASE_LOCK_AMOUNT);
     }
 
     /// @notice Extend the unlock time for `_tokenId`
@@ -774,15 +778,15 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
     function increase_unlock_time(uint _tokenId, uint _lock_duration) external nonReentrant {
         assert(_isApprovedOrOwner(msg.sender, _tokenId));
 
-        IVotingEscrow.LockedBalance memory _locked = locked[_tokenId];
+        IVotingEscrow.LockedBalance memory __locked = _locked[_tokenId];
         uint unlock_time = ((block.timestamp + _lock_duration) / WEEK) * WEEK; // Locktime is rounded down to weeks
 
-        require(_locked.end > block.timestamp, "Lock expired");
-        require(_locked.amount > 0, "Nothing is locked");
-        require(unlock_time > _locked.end, "Can only increase lock duration");
+        require(__locked.end > block.timestamp, "Lock expired");
+        require(__locked.amount > 0, "Nothing is _locked");
+        require(unlock_time > __locked.end, "Can only increase lock duration");
         require(unlock_time <= block.timestamp + MAXTIME, "Voting lock can be 2 years max");
 
-        _deposit_for(_tokenId, 0, unlock_time, _locked, DepositType.INCREASE_UNLOCK_TIME);
+        _deposit_for(_tokenId, 0, unlock_time, __locked, DepositType.INCREASE_UNLOCK_TIME);
     }
 
     /// @notice Withdraw all tokens for `_tokenId`
@@ -791,18 +795,18 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
         assert(_isApprovedOrOwner(msg.sender, _tokenId));
         require(attachments[_tokenId] == 0 && !voted[_tokenId], "attached");
 
-        IVotingEscrow.LockedBalance memory _locked = locked[_tokenId];
-        require(block.timestamp >= _locked.end, "The lock didn't expire");
-        uint value = uint(int256(_locked.amount));
+        IVotingEscrow.LockedBalance memory __locked = _locked[_tokenId];
+        require(block.timestamp >= __locked.end, "The lock didn't expire");
+        uint value = uint(int256(__locked.amount));
 
-        locked[_tokenId] = IVotingEscrow.LockedBalance(0, 0);
+        _locked[_tokenId] = IVotingEscrow.LockedBalance(0, 0);
         uint supply_before = supply;
         supply = supply_before - value;
 
-        // old_locked can have either expired <= timestamp or zero end
-        // _locked has only 0 end
+        // old__locked can have either expired <= timestamp or zero end
+        // __locked has only 0 end
         // Both can have >= 0 amount
-        _checkpoint(_tokenId, _locked, IVotingEscrow.LockedBalance(0, 0));
+        _checkpoint(_tokenId, __locked, IVotingEscrow.LockedBalance(0, 0));
 
         assert(IERC20(token).transfer(msg.sender, value));
 
@@ -811,6 +815,14 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
 
         emit Withdraw(msg.sender, _tokenId, value, block.timestamp);
         emit Supply(supply_before, supply_before - value);
+    }
+
+    function user_point_history(uint _tokenId, uint loc) public view returns (IVotingEscrow.Point memory) {
+        return _user_point_history[_tokenId][loc];
+    }
+
+    function locked(uint id) public view returns (IVotingEscrow.LockedBalance memory) {
+        return _locked[id];
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -835,7 +847,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
                 break;
             }
             uint _mid = (_min + _max + 1) / 2;
-            if (point_history[_mid].blk <= _block) {
+            if (_point_history[_mid].blk <= _block) {
                 _min = _mid;
             } else {
                 _max = _mid - 1;
@@ -854,7 +866,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
         if (_epoch == 0) {
             return 0;
         } else {
-            IVotingEscrow.Point memory last_point = user_point_history[_tokenId][_epoch];
+            IVotingEscrow.Point memory last_point = _user_point_history[_tokenId][_epoch];
             last_point.bias -= last_point.slope * int128(int256(_t) - int256(last_point.ts));
             if (last_point.bias < 0) {
                 last_point.bias = 0;
@@ -891,22 +903,22 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
                 break;
             }
             uint _mid = (_min + _max + 1) / 2;
-            if (user_point_history[_tokenId][_mid].blk <= _block) {
+            if (_user_point_history[_tokenId][_mid].blk <= _block) {
                 _min = _mid;
             } else {
                 _max = _mid - 1;
             }
         }
 
-        IVotingEscrow.Point memory upoint = user_point_history[_tokenId][_min];
+        IVotingEscrow.Point memory upoint = _user_point_history[_tokenId][_min];
 
         uint max_epoch = epoch;
         uint _epoch = _find_block_epoch(_block, max_epoch);
-        IVotingEscrow.Point memory point_0 = point_history[_epoch];
+        IVotingEscrow.Point memory point_0 = _point_history[_epoch];
         uint d_block = 0;
         uint d_t = 0;
         if (_epoch < max_epoch) {
-            IVotingEscrow.Point memory point_1 = point_history[_epoch + 1];
+            IVotingEscrow.Point memory point_1 = _point_history[_epoch + 1];
             d_block = point_1.blk - point_0.blk;
             d_t = point_1.ts - point_0.ts;
         } else {
@@ -938,10 +950,10 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
         uint _epoch = epoch;
         uint target_epoch = _find_block_epoch(_block, _epoch);
 
-        IVotingEscrow.Point memory point = point_history[target_epoch];
+        IVotingEscrow.Point memory point = _point_history[target_epoch];
         uint dt = 0;
         if (target_epoch < _epoch) {
-            IVotingEscrow.Point memory point_next = point_history[target_epoch + 1];
+            IVotingEscrow.Point memory point_next = _point_history[target_epoch + 1];
             if (point.blk != point_next.blk) {
                 dt = ((_block - point.blk) * (point_next.ts - point.ts)) / (point_next.blk - point.blk);
             }
@@ -991,7 +1003,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
     /// @return Total voting power
     function totalSupplyAtT(uint t) public view returns (uint) {
         uint _epoch = epoch;
-        IVotingEscrow.Point memory last_point = point_history[_epoch];
+        IVotingEscrow.Point memory last_point = _point_history[_epoch];
         return _supply_at(last_point, t);
     }
 
@@ -1033,15 +1045,15 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
         require(_isApprovedOrOwner(msg.sender, _from));
         require(_isApprovedOrOwner(msg.sender, _to));
 
-        IVotingEscrow.LockedBalance memory _locked0 = locked[_from];
-        IVotingEscrow.LockedBalance memory _locked1 = locked[_to];
-        uint value0 = uint(int256(_locked0.amount));
-        uint end = _locked0.end >= _locked1.end ? _locked0.end : _locked1.end;
+        IVotingEscrow.LockedBalance memory __locked0 = _locked[_from];
+        IVotingEscrow.LockedBalance memory __locked1 = _locked[_to];
+        uint value0 = uint(int256(__locked0.amount));
+        uint end = __locked0.end >= __locked1.end ? __locked0.end : __locked1.end;
 
-        locked[_from] = IVotingEscrow.LockedBalance(0, 0);
-        _checkpoint(_from, _locked0, IVotingEscrow.LockedBalance(0, 0));
+        _locked[_from] = IVotingEscrow.LockedBalance(0, 0);
+        _checkpoint(_from, __locked0, IVotingEscrow.LockedBalance(0, 0));
         _burn(_from);
-        _deposit_for(_to, value0, end, _locked1, DepositType.MERGE_TYPE);
+        _deposit_for(_to, value0, end, __locked1, DepositType.MERGE_TYPE);
     }
 
     /**
@@ -1056,9 +1068,9 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
 
         // save old data and totalWeight
         address _to = idToOwner[_tokenId];
-        IVotingEscrow.LockedBalance memory _locked = locked[_tokenId];
-        uint end = _locked.end;
-        uint value = uint(int256(_locked.amount));
+        IVotingEscrow.LockedBalance memory __locked = _locked[_tokenId];
+        uint end = __locked.end;
+        uint value = uint(int256(__locked.amount));
         require(value > 0); // dev: need non-zero value
 
         // reset supply, _deposit_for increase it
@@ -1071,8 +1083,8 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
         }
 
         // remove old data
-        locked[_tokenId] = IVotingEscrow.LockedBalance(0, 0);
-        _checkpoint(_tokenId, _locked, IVotingEscrow.LockedBalance(0, 0));
+        _locked[_tokenId] = IVotingEscrow.LockedBalance(0, 0);
+        _checkpoint(_tokenId, __locked, IVotingEscrow.LockedBalance(0, 0));
         _burn(_tokenId);
 
         // save end
@@ -1087,7 +1099,7 @@ contract VotingEscrow is IERC721, IERC721Metadata, IVotes, IVotingEscrow, Reentr
             _tokenId = tokenId;
             _mint(_to, _tokenId);
             _value = (value * amounts[i]) / totalWeight;
-            _deposit_for(_tokenId, _value, unlock_time, locked[_tokenId], DepositType.SPLIT_TYPE);
+            _deposit_for(_tokenId, _value, unlock_time, _locked[_tokenId], DepositType.SPLIT_TYPE);
         }
     }
 

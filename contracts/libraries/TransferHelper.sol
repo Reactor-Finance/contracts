@@ -4,8 +4,9 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 library TransferHelper {
     using Address for address;
-    bytes4 private transferSelector = bytes4(keccak256(bytes("transfer(address,uint256)")));
-    bytes4 private transferFromSelector = bytes4(keccak256(bytes("transferFrom(address,address,uint256)")));
+
+    bytes4 private constant transferSelector = bytes4(keccak256(bytes("transfer(address,uint256)")));
+    bytes4 private constant transferFromSelector = bytes4(keccak256(bytes("transferFrom(address,address,uint256)")));
 
     function _safeTransferEther(address to, uint256 amount) internal returns (bool success) {
         (success, ) = to.call{value: amount}(new bytes(0));
@@ -13,7 +14,7 @@ library TransferHelper {
     }
 
     function _safeTransferERC20(address token, address to, uint256 amount) internal returns (bytes memory _returnData) {
-        require(token.isContract(), "non contract call");
+        require(token.code.length != 0, "non contract call");
         _returnData = token.functionCall(abi.encodeWithSelector(transferSelector, to, amount));
     }
 
@@ -23,7 +24,7 @@ library TransferHelper {
         address recipient,
         uint256 amount
     ) internal returns (bytes memory _returnData) {
-        require(token.isContract(), "non contract call");
+        require(token.code.length != 0, "non contract call");
         _returnData = token.functionCall(abi.encodeWithSelector(transferFromSelector, spender, recipient, amount));
     }
 }

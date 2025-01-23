@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.13;
+pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./libraries/SignedSafeMath.sol";
+import "./libraries/SafeMath.sol";
 
 contract MasterChef is Ownable {
     using SafeMath for uint256;
@@ -60,7 +60,7 @@ contract MasterChef is Ownable {
         _;
     }
 
-    constructor(IERC20 _WBNB, IERC721 _NFT) {
+    constructor(IERC20 _WBNB, IERC721 _NFT) Ownable(msg.sender) {
         WBNB = _WBNB;
         NFT = _NFT;
         distributePeriod = 1 weeks;

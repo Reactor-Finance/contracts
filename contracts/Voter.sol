@@ -1,30 +1,31 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity ^0.8.0;
 
-import "./libraries/Math.sol";
-import "./interfaces/IBribe.sol";
-import "./interfaces/IBribeFactory.sol";
-import "./interfaces/IGauge.sol";
-import "./interfaces/IGaugeFactory.sol";
-import "./interfaces/IERC20.sol";
-import "./interfaces/IMinter.sol";
-import "./interfaces/IPairInfo.sol";
-import "./interfaces/IPairFactory.sol";
-import "./interfaces/IVotingEscrow.sol";
-import "./interfaces/IPermissionsRegistry.sol";
-import "./interfaces/IAlgebraFactory.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {IBribe} from "./interfaces/IBribe.sol";
+import {IBribeFactory} from "./interfaces/IBribeFactory.sol";
+import {IGauge} from "./interfaces/IGauge.sol";
+import {IGaugeFactory} from "./interfaces/IGaugeFactory.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {IMinter} from "./interfaces/IMinter.sol";
+import {IPair} from "./interfaces/IPair.sol";
+import {IPairFactory} from "./interfaces/IPairFactory.sol";
+import {IVotingEscrow} from "./interfaces/IVotingEscrow.sol";
+import {IPermissionsRegistry} from "./interfaces/IPermissionsRegistry.sol";
+import {IAlgebraFactory} from "./interfaces/IAlgebraFactory.sol";
 import "hardhat/console.sol";
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 interface IHypervisor {
     function pool() external view returns (address);
 }
 
-contract VoterV3 is OwnableUpgradeable, ReentrancyGuardUpgradeable {
+contract Voter is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     bool internal initflag;
@@ -134,9 +135,11 @@ contract VoterV3 is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function _init(address[] memory _tokens, address _permissionsRegistry, address _minter) external {
         require(msg.sender == minter || IPermissionsRegistry(permissionRegistry).hasRole("VOTER_ADMIN", msg.sender));
         require(!initflag);
+
         for (uint256 i = 0; i < _tokens.length; i++) {
             _whitelist(_tokens[i]);
         }
+
         minter = _minter;
         permissionRegistry = _permissionsRegistry;
         initflag = true;
@@ -518,7 +521,7 @@ contract VoterV3 is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /// @param  _pool       LP address
     /// @param  _gaugeType  the type of the gauge you want to create
     /// @dev    To create stable/Volatile pair gaugeType = 0, Concentrated liqudity = 1, ...
-    ///         Make sure to use the corrcet gaugeType or it will fail
+    ///         Make sure to use the correct gaugeType or it will fail
 
     function _createGauge(
         address _pool,
@@ -536,24 +539,20 @@ contract VoterV3 is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
         address tokenA = address(0);
         address tokenB = address(0);
-        (tokenA) = IPairInfo(_pool).token0();
-        (tokenB) = IPairInfo(_pool).token1();
+        (tokenA) = IPair(_pool).token0();
+        (tokenB) = IPair(_pool).token1();
 
         // for future implementation add isPair() in factory
         if (_gaugeType == 0) {
             isPair = IPairFactory(_factory).isPair(_pool);
-        }
-        if (_gaugeType == 1) {
+        } else if (_gaugeType == 1) {
             address _pool_factory = IAlgebraFactory(_factory).poolByPair(tokenA, tokenB);
             address _pool_hyper = IHypervisor(_pool).pool();
             require(_pool_hyper == _pool_factory, "wrong tokens");
             isPair = true;
-        } else {
-            //update
-            //isPair = false;
-        }
+        } else isPair = false;
 
-        // gov can create for any pool, even non-Reactor pairs
+        // gov can create for any pool, even non-reactor pairs
         if (!IPermissionsRegistry(permissionRegistry).hasRole("GOVERNANCE", msg.sender)) {
             require(isPair, "!_pool");
             require(isWhitelisted[tokenA] && isWhitelisted[tokenB], "!whitelisted");
@@ -562,14 +561,14 @@ contract VoterV3 is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
         // create internal and external bribe
         address _owner = IPermissionsRegistry(permissionRegistry).reactorTeamMultisig();
-        string memory _type = string.concat("Reactor LP Fees: ", IERC20(_pool).symbol());
+        string memory _type = string.concat("Reactor LP Fees: ", ERC20(_pool).symbol());
         _internal_bribe = IBribeFactory(bribefactory).createBribe(_owner, tokenA, tokenB, _type);
 
-        _type = string.concat("Reactor Bribes: ", IERC20(_pool).symbol());
+        _type = string.concat("Reactor Bribes: ", ERC20(_pool).symbol());
         _external_bribe = IBribeFactory(bribefactory).createBribe(_owner, tokenA, tokenB, _type);
 
         // create gauge
-        _gauge = IGaugeFactory(_gaugeFactory).createGaugeV2(
+        _gauge = IGaugeFactory(_gaugeFactory).createGauge(
             base,
             _ve,
             _pool,

@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity ^0.8.0;
 
 import {IPair} from "../interfaces/IPair.sol";
 import {IPairFactory} from "../interfaces/IPairFactory.sol";
 import {PairFees} from "../PairFees.sol";
-import {ITradeHelper} from "./interfaces/ITradeHelper.sol";
+import {ITradeHelper} from "../interfaces/ITradeHelper.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract TradeHelper is ITradeHelper {
     address public immutable factory;
@@ -80,8 +82,8 @@ contract TradeHelper is ITradeHelper {
         if (IPairFactory(factory).isPair(pair)) {
             IPair p = IPair(pair);
 
-            uint decimalsIn = 10 ** IERC20(tokenIn).decimals();
-            uint decimalsOut = 10 ** IERC20(tokenOut).decimals();
+            uint decimalsIn = 10 ** ERC20(tokenIn).decimals();
+            uint decimalsOut = 10 ** ERC20(tokenOut).decimals();
 
             uint reserveIn = (((tokenIn == p.token0()) ? p.reserve0() : p.reserve1()) * 1e18) / decimalsIn;
             uint reserveOut = (((tokenOut == p.token0()) ? p.reserve0() : p.reserve1()) * 1e18) / decimalsOut;

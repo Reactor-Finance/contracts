@@ -4,7 +4,7 @@ import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {IPair} from "./interfaces/IPair.sol";
 import {IDibs} from "./interfaces/IDibs.sol";
@@ -16,15 +16,11 @@ import {PairFees} from "./PairFees.sol";
 contract Pair is IPair, ERC20Permit, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
-    string public name;
-    string public symbol;
+    string private _name;
+    string private _symbol;
     bool public stable;
-    uint public totalSupply = 0;
-    mapping(address => mapping(address => uint)) public allowance;
-    mapping(address => uint) public balanceOf;
     bytes32 internal DOMAIN_SEPARATOR;
     bytes32 internal constant PERMIT_TYPEHASH = 0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
-    mapping(address => uint) public nonces;
     uint internal constant MINIMUM_LIQUIDITY = 10 ** 3;
     address public token0;
     address public token1;
@@ -80,14 +76,10 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
     event Sync(uint reserve0, uint reserve1);
     event Claim(address indexed sender, address indexed recipient, uint amount0, uint amount1);
 
-    event Transfer(address indexed from, address indexed to, uint amount);
-    event Approval(address indexed owner, address indexed spender, uint amount);
-
     constructor() ERC20("", "") ERC20Permit("") {}
 
-    /// @inheritdoc IPool
     function initialize(address _token0, address _token1, bool _stable) external {
-        require(factory == address, "F");
+        require(factory == address(0), "F");
         factory = msg.sender;
         (token0, token1, stable) = (_token0, _token1, _stable);
         fees = address(new PairFees(_token0, _token1));
@@ -494,16 +486,16 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
         }
     }
 
+    function _beforeTokenTransfer(address from, address to, uint256) internal {
+        _updateFor(from);
+        _updateFor(to);
+    }
+
     function name() public view override returns (string memory) {
         return _name;
     }
 
     function symbol() public view override returns (string memory) {
         return _symbol;
-    }
-
-    function _beforeTokenTransfer(address from, address to, uint256) internal override {
-        _updateFor(from);
-        _updateFor(to);
     }
 }

@@ -1,26 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.11;
 
-import "../Bribes.sol";
+import {Bribe} from "../Bribe.sol";
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "../interfaces/IPermissionsRegistry.sol";
+import {IPermissionsRegistry} from "../interfaces/IPermissionsRegistry.sol";
+import {IBribe} from "../interfaces/IBribe.sol";
+import {IBribeFactory} from "../interfaces/IBribeFactory.sol";
 
-interface IBribe {
-    function addReward(address) external;
-    function setVoter(address _Voter) external;
-    function setMinter(address _Voter) external;
-    function setOwner(address _Voter) external;
-    function emergencyRecoverERC20(address tokenAddress, uint256 tokenAmount) external;
-    function recoverERC20AndUpdateData(address tokenAddress, uint256 tokenAmount) external;
-}
-
-contract BribeFactoryV3 is OwnableUpgradeable {
+contract BribeFactory is IBribeFactory, OwnableUpgradeable {
     address public last_bribe;
     address[] internal _bribes;
     address public voter;
 
-    address[] public defaultRewardToken;
+    address[] public defaultRewardTokens;
 
     IPermissionsRegistry public permissionsRegistry;
 
@@ -35,11 +28,11 @@ contract BribeFactoryV3 is OwnableUpgradeable {
         voter = _voter;
 
         //bribe default tokens
-        defaultRewardToken.push(address(0xF4C8E32EaDEC4BFe97E0F595AdD0f4450a863a11)); // $the
-        defaultRewardToken.push(address(0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c)); // $wbnb
-        defaultRewardToken.push(address(0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d)); // $usdc
-        defaultRewardToken.push(address(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56)); // $busd
-        defaultRewardToken.push(address(0x55d398326f99059fF775485246999027B3197955)); // $usdt
+        defaultRewardTokens.push(address(0xF4C8E32EaDEC4BFe97E0F595AdD0f4450a863a11)); // $the
+        defaultRewardTokens.push(address(0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c)); // $wbnb
+        defaultRewardTokens.push(address(0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d)); // $usdc
+        defaultRewardTokens.push(address(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56)); // $busd
+        defaultRewardTokens.push(address(0x55d398326f99059fF775485246999027B3197955)); // $usdt
 
         // registry to check accesses
         permissionsRegistry = IPermissionsRegistry(_permissionsRegistry);
@@ -60,7 +53,7 @@ contract BribeFactoryV3 is OwnableUpgradeable {
         if (_token0 != address(0)) lastBribe.addRewardToken(_token0);
         if (_token1 != address(0)) lastBribe.addRewardToken(_token1);
 
-        lastBribe.addRewardTokens(defaultRewardToken);
+        lastBribe.addRewardTokens(defaultRewardTokens);
 
         last_bribe = address(lastBribe);
         _bribes.push(last_bribe);
@@ -76,10 +69,10 @@ contract BribeFactoryV3 is OwnableUpgradeable {
     ----------------------------------------------------------------------------- */
 
     /// @notice set the bribe factory voter
-    function setVoter(address _Voter) external {
+    function setVoter(address _voter) external {
         require(owner() == msg.sender, "not owner");
-        require(_Voter != address(0));
-        voter = _Voter;
+        require(_voter != address(0));
+        voter = _voter;
     }
 
     /// @notice set the bribe factory permission registry
@@ -90,21 +83,21 @@ contract BribeFactoryV3 is OwnableUpgradeable {
     }
 
     /// @notice set the bribe factory permission registry
-    function pushDefaultRewardToken(address _token) external {
+    function pushDefaultRewardTokens(address _token) external {
         require(owner() == msg.sender, "not owner");
         require(_token != address(0));
-        defaultRewardToken.push(_token);
+        defaultRewardTokens.push(_token);
     }
 
     /// @notice set the bribe factory permission registry
-    function removeDefaultRewardToken(address _token) external {
+    function removeDefaultRewardTokens(address _token) external {
         require(owner() == msg.sender, "not owner");
         require(_token != address(0));
         uint i = 0;
-        for (i; i < defaultRewardToken.length; i++) {
-            if (defaultRewardToken[i] == _token) {
-                defaultRewardToken[i] = defaultRewardToken[defaultRewardToken.length - 1];
-                defaultRewardToken.pop();
+        for (i; i < defaultRewardTokens.length; i++) {
+            if (defaultRewardTokens[i] == _token) {
+                defaultRewardTokens[i] = defaultRewardTokens[defaultRewardTokens.length - 1];
+                defaultRewardTokens.pop();
                 break;
             }
         }
@@ -120,14 +113,14 @@ contract BribeFactoryV3 is OwnableUpgradeable {
 
     /// @notice Add a reward token to a given bribe
     function addRewardToBribe(address _token, address __bribe) external onlyAllowed {
-        IBribe(__bribe).addReward(_token);
+        IBribe(__bribe).addRewardToken(_token);
     }
 
     /// @notice Add multiple reward token to a given bribe
     function addRewardsToBribe(address[] memory _token, address __bribe) external onlyAllowed {
         uint i = 0;
         for (i; i < _token.length; i++) {
-            IBribe(__bribe).addReward(_token[i]);
+            IBribe(__bribe).addRewardToken(_token[i]);
         }
     }
 
@@ -135,7 +128,7 @@ contract BribeFactoryV3 is OwnableUpgradeable {
     function addRewardToBribes(address _token, address[] memory __bribes) external onlyAllowed {
         uint i = 0;
         for (i; i < __bribes.length; i++) {
-            IBribe(__bribes[i]).addReward(_token);
+            IBribe(__bribes[i]).addRewardToken(_token);
         }
     }
 
@@ -146,7 +139,7 @@ contract BribeFactoryV3 is OwnableUpgradeable {
         for (i; i < __bribes.length; i++) {
             address _br = __bribes[i];
             for (k = 0; k < _token.length; k++) {
-                IBribe(_br).addReward(_token[i][k]);
+                IBribe(_br).addRewardToken(_token[i][k]);
             }
         }
     }

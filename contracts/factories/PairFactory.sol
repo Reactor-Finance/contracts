@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity ^0.8.0;
 
 import "../interfaces/IPairFactory.sol";
 import {IPair} from "../interfaces/IPair.sol";
@@ -26,8 +26,6 @@ contract PairFactory is IPairFactory {
     event PairCreated(address indexed token0, address indexed token1, bool stable, address pair, uint);
 
     constructor(address _implementation) {
-        pauser = msg.sender;
-        isPaused = false;
         feeManager = msg.sender;
         stableFee = 4; // 0.04%
         volatileFee = 18; // 0.18%

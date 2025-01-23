@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity ^0.8.0;
 
 import {Base64} from "./libraries/Base64.sol";
 import {IVeArtProxy} from "./interfaces/IVeArtProxy.sol";
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 contract VeArtProxyUpgradeable is IVeArtProxy, OwnableUpgradeable {
     constructor() {}

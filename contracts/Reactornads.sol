@@ -35,7 +35,7 @@ contract Reactornads is ERC721Enumerable, Ownable {
         uint256 _nftPrice,
         uint256 _startTimestamp,
         address _multiSig
-    ) ERC721("ReactorNads", "rctNADS") {
+    ) ERC721("ReactorNads", "rctNADS") Ownable(msg.sender) {
         MAX_SUPPLY = _maxSupply;
         NFT_PRICE = _nftPrice;
         SALE_START_TIMESTAMP = _startTimestamp;
