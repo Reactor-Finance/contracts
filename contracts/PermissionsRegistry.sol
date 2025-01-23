@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import {IPermissionsRegistry} from "./interfaces/IPermissionsRegistry.sol";
+
 /*
     This contract handles the accesses to the various Reactor contracts.
 */
 
-contract PermissionsRegistry {
+contract PermissionsRegistry is IPermissionsRegistry {
     /// @notice Control this contract. This is the main multisig 4/6
     address public reactorMultisig;
 

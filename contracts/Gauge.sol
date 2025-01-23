@@ -9,10 +9,7 @@ import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 import {IPair} from "./interfaces/IPair.sol";
 import {IBribe} from "./interfaces/IBribe.sol";
-
-interface IRewarder {
-    function onReward(address user, address recipient, uint256 userBalance) external;
-}
+import {IRewarder} from "./interfaces/IRewarder.sol";
 
 contract Gauge is ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;

@@ -1,4 +1,4 @@
-// require("@openzeppelin/hardhat-upgrades");
+require("@openzeppelin/hardhat-upgrades");
 require("@nomiclabs/hardhat-ethers");
 require("@nomicfoundation/hardhat-verify");
 require("@typechain/hardhat");
@@ -56,8 +56,32 @@ const config = {
     },
 
     monadDevnet: {
-      url: "https://devnet1.monad.xyz/rpc/8XQAiNSsPCrIdVttyeFLC6StgvRNTdf",
-      chainId: 41454,
+      url: "https://rpc-devnet.monadinfra.com/rpc/3fe540e310bbb6ef0b9f16cd23073b0a",
+      chainId: 20143,
+      accounts: [PRIVATE_KEY],
+      gasPrice: "auto",
+      gas: "auto",
+      gasMultiplier: 1
+    },
+
+    abstractTestnet: {
+      url: "https://api.testnet.abs.xyz",
+      chainId: 11124,
+      accounts: [PRIVATE_KEY]
+    },
+
+    beraBartio: {
+      url: "https://bera-testnet.nodeinfra.com",
+      chainId: 80084,
+      accounts: [PRIVATE_KEY],
+      gasPrice: "auto",
+      gas: "auto",
+      gasMultiplier: 1
+    },
+
+    sepolia: {
+      url: "https://sepolia.gateway.tenderly.co",
+      chainId: 11155111,
       accounts: [PRIVATE_KEY]
     },
 
@@ -71,7 +95,7 @@ const config = {
   },
   typechain: {
     outDir: "./artifacts/types",
-    target: "ethers-v6"
+    target: "ethers-v5"
   },
   // etherscan: {
   //   // Your API key for Etherscan

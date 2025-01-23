@@ -12,7 +12,7 @@
     "@nomiclabs/hardhat-web3": "^2.0.0",
     "@openzeppelin/contracts": "^5.2.0",
     "@openzeppelin/contracts-upgradeable": "^4.8.0",
-    "@openzeppelin/hardhat-upgrades": "^1.22.1",
+    "@openzeppelin/hardhat-upgrades": "^3.9.0",
     "@openzeppelin/test-helpers": "^0.5.16",
     "@typechain/ethers-v5": "^11.1.2",
     "@typechain/ethers-v6": "^0.5.0",
@@ -22,7 +22,7 @@
     "@xyrusworx/hardhat-solidity-json": "^1.0.2",
     "chai": "^4.3.7",
     "dotenv": "^16.4.7",
-    "ethers": "^6.13.5",
+    "ethers": "5.7.2",
     "hardhat": "^2.12.7",
     "hardhat-gas-reporter": "^1.0.8",
     "prettier": "^3.4.2",
@@ -30,7 +30,7 @@
     "solidity-coverage": "^0.8.1",
     "ts-node": ">=8.0.0",
     "typechain": "^8.3.0",
-    "typescript": ">=4.5.0",
+    "typescript": "^5.7.3",
     "zod": "^3.24.1"
   },
   "scripts": {
@@ -38,6 +38,7 @@
     "clean": "rm -rf artifacts",
     "compile": "npx hardhat compile",
     "jsonify": "npx hardhat solidity-json",
-    "build": "yarn clean && yarn compile && yarn jsonify"
+    "build": "yarn clean && yarn compile && yarn jsonify",
+    "deploy:core": "npx hardhat run scripts/core/deploy.ts"
   }
 }
