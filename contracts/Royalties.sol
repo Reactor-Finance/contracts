@@ -4,21 +4,20 @@ pragma solidity >=0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 import "./interfaces/IVotingEscrow.sol";
 import "./interfaces/IWETH.sol";
 
-import 'hardhat/console.sol';
+import "hardhat/console.sol";
 
 interface IReactornads {
-    function originalMinters(address) external view returns(uint);
-    function totalSupply() external view returns(uint);
-    function reservedAmount() external view returns(uint);
+    function originalMinters(address) external view returns (uint);
+    function totalSupply() external view returns (uint);
+    function reservedAmount() external view returns (uint);
 }
 
 contract Royalties is ReentrancyGuard {
-
     using SafeERC20 for IERC20;
 
     IERC20 public wbnb;
@@ -36,13 +35,13 @@ contract Royalties is ReentrancyGuard {
     mapping(address => bool) public depositors;
     mapping(address => uint) public userCheckpoint;
 
-    modifier onlyOwner {
-        require(msg.sender == owner, 'not owner');
+    modifier onlyOwner() {
+        require(msg.sender == owner, "not owner");
         _;
     }
 
-    modifier allowed {
-        require(depositors[msg.sender] == true || msg.sender == owner, 'not allowed');
+    modifier allowed() {
+        require(depositors[msg.sender] == true || msg.sender == owner, "not allowed");
         _;
     }
 
@@ -56,12 +55,10 @@ contract Royalties is ReentrancyGuard {
         epoch = 0;
     }
 
-
     function deposit(uint256 amount) external payable allowed {
-
         require(amount > 0 || msg.value > 0);
         uint256 _amount = 0;
-        if(msg.value == 0){
+        if (msg.value == 0) {
             wbnb.safeTransferFrom(msg.sender, address(this), amount);
             _amount = amount;
         } else {
@@ -81,44 +78,41 @@ contract Royalties is ReentrancyGuard {
         IERC20(_token).safeTransfer(msg.sender, _balance);
     }
 
-
     function claim(address to) external nonReentrant {
         require(to != address(0));
-        
+
         // get amount
         uint256 _toClaim = claimable(msg.sender);
-        require(_toClaim <= wbnb.balanceOf(address(this)), 'too many rewards');
-        require(_toClaim > 0, 'wait next');
-        
+        require(_toClaim <= wbnb.balanceOf(address(this)), "too many rewards");
+        require(_toClaim > 0, "wait next");
+
         // update checkpoint
         userCheckpoint[msg.sender] = epoch;
 
         // send and enjoy
         wbnb.safeTransfer(to, _toClaim);
-    }   
+    }
 
-
-
-    function claimable(address user) public view returns(uint) {
+    function claimable(address user) public view returns (uint) {
         require(user != address(0));
         //Total fees * Reactornads.originalMinters[msg.sender] / (Reactornads.totalSupply - Reactornads.reservedAmount)
         uint256 cp = userCheckpoint[user];
-        if(cp >= epoch){
+        if (cp >= epoch) {
             return 0;
         }
 
         uint i;
         uint256 _reward = 0;
-        for(i = cp; i < epoch; i++){
+        for (i = cp; i < epoch; i++) {
             uint256 _resAmnt = reservedAmounts[i];
             uint256 _tot = totalSupply[i];
-            uint256 _fee = feesPerEpoch[i]; 
+            uint256 _fee = feesPerEpoch[i];
             uint256 weight = reactornads.originalMinters(user);
-            _reward += _fee * weight / (_tot - _resAmnt);
-        }  
+            _reward += (_fee * weight) / (_tot - _resAmnt);
+        }
         return _reward;
     }
-    
+
     /* 
         OWNER FUNCTIONS
     */
@@ -133,12 +127,10 @@ contract Royalties is ReentrancyGuard {
         depositors[depositor] = false;
     }
 
-    function setOwner(address _owner) external onlyOwner{
+    function setOwner(address _owner) external onlyOwner {
         require(_owner != address(0));
         owner = _owner;
     }
-    
 
     receive() external payable {}
-
 }

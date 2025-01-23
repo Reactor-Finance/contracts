@@ -1,16 +1,13 @@
-
-
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity ^0.8.0;
 
 interface IBribeAPI {
-
     struct Reward {
         uint256 periodFinish;
         uint256 rewardsPerEpoch;
-        uint256 lastUpdateTime; 
+        uint256 lastUpdateTime;
     }
-    function rewardData(address _token, uint256 ts) external view returns(Reward memory _Reward);
+    function rewardData(address _token, uint256 ts) external view returns (Reward memory _Reward);
     function _deposit(uint amount, uint tokenId) external;
     function _withdraw(uint amount, uint tokenId) external;
     function getRewardForOwner(uint tokenId, address[] memory tokens) external;
@@ -23,12 +20,10 @@ interface IBribeAPI {
     function getNextEpochStart() external pure returns (uint);
     function getPriorSupplyIndex(uint timestamp) external view returns (uint);
     function rewardTokens(uint index) external view returns (address);
-    function rewardsPerEpoch(address token,uint ts) external view returns (uint);
-    function supplyCheckpoints(uint _index) external view returns(uint timestamp, uint supplyd);
+    function rewardsPerEpoch(address token, uint ts) external view returns (uint);
+    function supplyCheckpoints(uint _index) external view returns (uint timestamp, uint supplyd);
     function earned(uint tokenId, address token) external view returns (uint);
-    function firstBribeTimestamp() external view returns(uint);
+    function firstBribeTimestamp() external view returns (uint);
     function totalSupplyAt(uint256 _timestamp) external view returns (uint256);
     function balanceOfAt(uint256 tokenId, uint256 _timestamp) external view returns (uint256);
-
-
 }

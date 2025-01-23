@@ -8,13 +8,12 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../interfaces/IVotingEscrow.sol";
 
 interface IReactor {
-    function originalMinters(address) external view returns(uint);
-    function totalSupply() external view returns(uint);
-    function reservedAmount() external view returns(uint);
+    function originalMinters(address) external view returns (uint);
+    function totalSupply() external view returns (uint);
+    function reservedAmount() external view returns (uint);
 }
 
 contract SimpleAirdrop {
-
     using SafeERC20 for IERC20;
 
     address public owner;
@@ -27,11 +26,10 @@ contract SimpleAirdrop {
     uint256 public constant MAX_PERIOD = 86400 * 365 * 2;
     uint256 public amountPerUser;
 
-    modifier onlyOwner {
-        require(msg.sender == owner || msg.sender == secondOwner, 'not owner');
+    modifier onlyOwner() {
+        require(msg.sender == owner || msg.sender == secondOwner, "not owner");
         _;
     }
-
 
     event Deposit(uint256 amount);
     event VestingUpdate(uint256 balance, uint256 vesting_period, uint256 tokenPerSec);
@@ -50,7 +48,7 @@ contract SimpleAirdrop {
     function distributeAirdrop() external onlyOwner {
         uint i = 0;
         address _user;
-        for(i; i < users.length; i++){
+        for (i; i < users.length; i++) {
             _user = users[i];
             IERC20(reactor).approve(ve, 0);
             IERC20(reactor).approve(ve, amountPerUser);
@@ -61,7 +59,7 @@ contract SimpleAirdrop {
     function distributeAirdrop(address[] memory __users) external onlyOwner {
         uint i = 0;
         address _user;
-        for(i; i < __users.length; i++){
+        for (i; i < __users.length; i++) {
             _user = __users[i];
             IERC20(reactor).approve(ve, 0);
             IERC20(reactor).approve(ve, amountPerUser);
@@ -71,26 +69,23 @@ contract SimpleAirdrop {
 
     function pushUser(address[] memory _users) external onlyOwner {
         uint i = 0;
-        for(i; i < _users.length; i++){
+        for (i; i < _users.length; i++) {
             users.push(_users[i]);
         }
     }
-
 
     function withdrawERC20(address _token) external onlyOwner {
         require(_token != address(0));
         uint256 _balance = IERC20(_token).balanceOf(address(this));
         IERC20(_token).safeTransfer(msg.sender, _balance);
     }
-   
-    function setOwner(address _owner) external onlyOwner{
+
+    function setOwner(address _owner) external onlyOwner {
         require(_owner != address(0));
         owner = _owner;
     }
-    function setOwner2(address _owner) external onlyOwner{
+    function setOwner2(address _owner) external onlyOwner {
         require(_owner != address(0));
         secondOwner = _owner;
     }
-    
-
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity ^0.8.0;
 
 interface IGaugeAPI {
     function notifyRewardAmount(address token, uint amount) external;
@@ -11,5 +11,4 @@ interface IGaugeAPI {
     function isForPair() external view returns (bool);
     function totalSupply() external view returns (uint);
     function earned(address account) external view returns (uint);
-    
 }

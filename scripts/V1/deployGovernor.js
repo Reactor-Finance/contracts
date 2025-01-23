@@ -1,22 +1,15 @@
-const { ethers  } = require('hardhat');
+const { ethers } = require("hardhat");
 
-
-
-
-async function main () {
-
+async function main() {
   accounts = await ethers.getSigners();
-  owner = accounts[0]
+  owner = accounts[0];
 
-  console.log('Deploying Contract...');
+  console.log("Deploying Contract...");
 
   data = await ethers.getContractFactory("Governor");
   governor = await data.deploy();
   txDeployed = await governor.deployed();
-  console.log("governor: ", governor.address)
-
-
-
+  console.log("governor: ", governor.address);
 }
 
 main()

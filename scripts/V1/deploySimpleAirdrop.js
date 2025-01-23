@@ -1,27 +1,20 @@
-const { ethers  } = require('hardhat');
+const { ethers } = require("hardhat");
 
-
-
-
-async function main () {
-
+async function main() {
   accounts = await ethers.getSigners();
-  owner = accounts[0]
+  owner = accounts[0];
 
-  console.log('Deploying Contract...');
-  
+  console.log("Deploying Contract...");
+
   /*data = await ethers.getContractFactory("SimpleAirdropFNFT2");
   SimpleAirdropFNFT = await data.deploy();
   txDeployed = await SimpleAirdropFNFT.deployed();
   console.log("SimpleAirdropFNFT: ", SimpleAirdropFNFT.address)*/
 
-  
   data = await ethers.getContractFactory("SimpleAirdrop");
   SimpleAirdropDAO = await data.deploy();
   txDeployed = await SimpleAirdropDAO.deployed();
-  console.log("SimpleAirdrop: ", SimpleAirdropDAO.address)
-
-
+  console.log("SimpleAirdrop: ", SimpleAirdropDAO.address);
 }
 
 main()

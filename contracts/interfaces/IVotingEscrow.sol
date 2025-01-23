@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity ^0.8.0;
 
 interface IVotingEscrow {
-
     struct Point {
         int128 bias;
         int128 slope; // # -dweight / dt
@@ -17,7 +16,7 @@ interface IVotingEscrow {
 
     function create_lock_for(uint _value, uint _lock_duration, address _to) external returns (uint);
 
-    function locked(uint id) external view returns(LockedBalance memory);
+    function locked(uint id) external view returns (LockedBalance memory);
     function tokenOfOwnerByIndex(address _owner, uint _tokenIndex) external view returns (uint);
 
     function token() external view returns (address);
@@ -46,6 +45,5 @@ interface IVotingEscrow {
     function totalSupply() external view returns (uint);
     function supply() external view returns (uint);
 
-
-    function decimals() external view returns(uint8);
+    function decimals() external view returns (uint8);
 }
