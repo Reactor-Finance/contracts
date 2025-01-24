@@ -140,11 +140,6 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
         }
     }
 
-    function claimStakingFees() external {
-        address _feehandler = IPairFactory(factory).stakingFeeHandler();
-        PairFees(fees).withdrawStakingFees(_feehandler);
-    }
-
     // Accrue fees on token0
     function _update0(uint amount) internal {
         // get referral fee
@@ -155,17 +150,13 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
         amount -= _referralFee;
 
         // get lp and staking fee
-        uint256 _stakingNftFee = (amount * IPairFactory(factory).stakingNFTFee()) / 10000;
-        PairFees(fees).processStakingFees(_stakingNftFee, true);
         IERC20(token0).safeTransfer(fees, amount); // transfer the fees out to PairFees
 
-        // remove staking fees from lpfees
-        amount -= _stakingNftFee;
         uint256 _ratio = (amount * 1e18) / totalSupply(); // 1e18 adjustment is removed during claim
         if (_ratio > 0) {
             index0 += _ratio;
         }
-        emit Fees(msg.sender, amount + _stakingNftFee + _referralFee, 0);
+        emit Fees(msg.sender, amount + _referralFee, 0);
     }
 
     // Accrue fees on token1
@@ -176,14 +167,7 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
         uint256 _referralFee = (amount * _maxRef) / 10000;
         IERC20(token1).safeTransfer(_dibs, _referralFee); // transfer the fees out to PairFees
         amount -= _referralFee;
-
-        // get lp and staking fee
-        uint256 _stakingNftFee = (amount * IPairFactory(factory).stakingNFTFee()) / 10000;
-        PairFees(fees).processStakingFees(_stakingNftFee, false);
         IERC20(token1).safeTransfer(fees, amount); // transfer the fees out to PairFees
-
-        // remove staking fees from lpfees
-        amount -= _stakingNftFee;
 
         uint256 _ratio = (amount * 1e18) / totalSupply();
 
@@ -191,7 +175,7 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
             index1 += _ratio;
         }
 
-        emit Fees(msg.sender, 0, amount + _stakingNftFee + _referralFee);
+        emit Fees(msg.sender, 0, amount + _referralFee);
     }
 
     // this function MUST be called on any balance changes, otherwise can be used to infinitely claim fees

@@ -35,8 +35,7 @@ contract CLFeesVault {
     address public pool;
     address public gammaRecipient;
     address public dibs;
-    address public rctNftStakingConverter;
-    address public pairFactoryClassic = address(0xAFD89d21BdB66d00817d4153E055830B1c2B3970);
+    address public pairFactoryClassic;
     IPermissionsRegistry public permissionsRegsitry;
 
     mapping(address => bool) public isHypervisor; //address   =>  boolean         check if caller is gamma strategy. Hypervisor calls updatedFees
@@ -64,17 +63,23 @@ contract CLFeesVault {
         address indexed pool,
         uint timestamp
     );
-    event Fees0(uint gamma, uint referral, uint nft, uint gauge, address indexed token);
-    event Fees1(uint gamma, uint referral, uint nft, uint gauge, address indexed token);
+    event Fees0(uint gamma, uint referral, uint gauge, address indexed token);
+    event Fees1(uint gamma, uint referral, uint gauge, address indexed token);
 
     /* -----------------------------------------------------------------------------
                                     CONSTRUCTOR AND INIT
     ----------------------------------------------------------------------------- */
-    constructor(address _pool, address _permissionRegistry, address _voter, address _gammaFeeRecipient) {
+    constructor(
+        address _pool,
+        address _permissionRegistry,
+        address _voter,
+        address _gammaFeeRecipient,
+        address _pairFactoryClassic
+    ) {
+        pairFactoryClassic = _pairFactoryClassic;
         permissionsRegsitry = IPermissionsRegistry(_permissionRegistry);
         pool = _pool;
         voter = IVoter(_voter);
-        rctNftStakingConverter = IPairFactory(pairFactoryClassic).stakingFeeHandler();
         gammaRecipient = _gammaFeeRecipient;
         dibs = IPairFactory(pairFactoryClassic).dibs();
     }
@@ -96,38 +101,35 @@ contract CLFeesVault {
         // fees
         uint gamma;
         uint referral;
-        uint nft;
 
         // token0
         address t0 = IPair(pool).token0();
         uint256 _amount0 = IERC20(t0).balanceOf(address(this));
 
-        (gamma, referral, nft, gauge0) = _getFees(_amount0);
+        (gamma, referral, gauge0) = _getFees(_amount0);
 
         if (_amount0 > 0) {
             if (gauge0 > 0) IERC20(t0).safeTransfer(msg.sender, gauge0);
             if (gamma > 0) IERC20(t0).safeTransfer(gammaRecipient, gamma);
-            if (nft > 0) IERC20(t0).safeTransfer(rctNftStakingConverter, nft);
             if (referral > 0) IERC20(t0).safeTransfer(dibs, referral);
-            emit Fees0(gamma, referral, nft, gauge0, t0);
+            emit Fees0(gamma, referral, gauge0, t0);
         }
         // token1
         address t1 = IPair(pool).token1();
         uint256 _amount1 = IERC20(t1).balanceOf(address(this));
 
-        (gamma, referral, nft, gauge1) = _getFees(_amount1);
+        (gamma, referral, gauge1) = _getFees(_amount1);
         if (_amount1 > 0) {
             if (gauge1 > 0) IERC20(t1).safeTransfer(msg.sender, gauge1);
             if (gamma > 0) IERC20(t1).safeTransfer(gammaRecipient, gamma);
-            if (nft > 0) IERC20(t1).safeTransfer(rctNftStakingConverter, nft);
             if (referral > 0) IERC20(t1).safeTransfer(dibs, referral);
-            emit Fees1(gamma, referral, nft, gauge1, t1);
+            emit Fees1(gamma, referral, gauge1, t1);
         }
 
         emit Fees(_amount0, _amount1, t0, t1, pool, block.timestamp);
     }
 
-    function _getFees(uint amount) internal view returns (uint gamma, uint referral, uint nft, uint gauge) {
+    function _getFees(uint amount) internal view returns (uint gamma, uint referral, uint gauge) {
         uint256 referralFee;
         if (activereferral) {
             referralFee = IPairFactory(pairFactoryClassic).MAX_REFERRAL_FEE();
@@ -135,11 +137,9 @@ contract CLFeesVault {
             referralFee = 0;
         }
 
-        uint256 rctNftFee = IPairFactory(pairFactoryClassic).stakingNFTFee();
         referral = (amount * referralFee) / PRECISION;
-        nft = ((amount - referral) * rctNftFee) / PRECISION;
         gamma = (amount * gammaShare) / PRECISION;
-        gauge = amount - gamma - nft - referral;
+        gauge = amount - gamma - referral;
     }
 
     /* -----------------------------------------------------------------------------
@@ -167,11 +167,6 @@ contract CLFeesVault {
     function setDibs(address _dibs) external onlyAdmin {
         require(_dibs != address(0));
         dibs = _dibs;
-    }
-
-    function setNftStaking(address _rctNftStaking) external onlyAdmin {
-        require(_rctNftStaking != address(0));
-        rctNftStakingConverter = _rctNftStaking;
     }
 
     function setPairFactory(address _pf) external onlyAdmin {

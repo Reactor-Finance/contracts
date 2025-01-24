@@ -8,10 +8,8 @@ interface IPairFactory {
     function getPair(address tokenA, address token, bool stable) external view returns (address);
     function createPair(address tokenA, address tokenB, bool stable) external returns (address pair);
     function dibs() external view returns (address);
-    function stakingFeeHandler() external view returns (address);
     function stableFee() external view returns (uint256);
     function volatileFee() external view returns (uint256);
-    function stakingNFTFee() external view returns (uint256);
     function MAX_REFERRAL_FEE() external view returns (uint256);
     function MAX_FEE() external view returns (uint256);
     function feeManager() external view returns (address);

@@ -1,6 +1,6 @@
 {
   "Reactor": {
-    "contractAddress": "0xD75411C6A3fEf2278E51EEaa73cdE8352c59eFEd",
+    "contractAddress": "0xE256cce5B72C1EFbDf0Aa295b8D99f5E23Fb379E",
     "abi": [
       {
         "inputs": [],
@@ -604,7 +604,7 @@
     ]
   },
   "PermissionsRegistry": {
-    "contractAddress": "0x6202Fc26DF15bb3010df625e8874E8B55C42b46f",
+    "contractAddress": "0xE0b6AAC83134ab8423229861C2247dCE466fb0E0",
     "abi": [
       {
         "inputs": [],
@@ -996,7 +996,7 @@
     ]
   },
   "PairFactory": {
-    "contractAddress": "0xC17573eC77381E358adB9b36CA9774E7302ce068",
+    "contractAddress": "0x400883e03aAAE5Eb1dE4273B602c067F8F1E252D",
     "abi": [
       {
         "inputs": [
@@ -1351,60 +1351,8 @@
         "type": "function"
       },
       {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "_feehandler",
-            "type": "address"
-          }
-        ],
-        "name": "setStakingFeeAddress",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "_newFee",
-            "type": "uint256"
-          }
-        ],
-        "name": "setStakingFees",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
         "inputs": [],
         "name": "stableFee",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "stakingFeeHandler",
-        "outputs": [
-          {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "stakingNFTFee",
         "outputs": [
           {
             "internalType": "uint256",
@@ -1431,7 +1379,7 @@
     ]
   },
   "GaugeFactory": {
-    "contractAddress": "0xEeeC1d828520fC26541624c4e2E34376220CB93a",
+    "contractAddress": "0x4Ba2ca8F076a8a9A9166d4CB4cCa86f42918a8e6",
     "abi": [
       {
         "inputs": [],
@@ -1731,7 +1679,7 @@
     ]
   },
   "VeArtProxyUpgradeable": {
-    "contractAddress": "0xa45328cB9B5215cc18937AB123fCf44a6815b6C1",
+    "contractAddress": "0x995157c26212527d3ef0031ee4422E43bA510FE7",
     "abi": [
       {
         "inputs": [],
@@ -1847,7 +1795,7 @@
     ]
   },
   "VotingEscrow": {
-    "contractAddress": "0xCA6f864adD2cF45bf2b28FBbC990216Cc759B0Ca",
+    "contractAddress": "0xAE5fEBDDCddE9bA917a163A7976B58B7edE07E53",
     "abi": [
       {
         "inputs": [
@@ -3426,7 +3374,7 @@
     ]
   },
   "Voter": {
-    "contractAddress": "0xdf9DF85C7B88034A8b3a6380D22c179815BA723D",
+    "contractAddress": "0x54e07e58bB2d7eECAB1EEd44809fEB63ab2C991c",
     "abi": [
       {
         "inputs": [],
@@ -4949,7 +4897,7 @@
     ]
   },
   "BribeFactory": {
-    "contractAddress": "0x79cC64e40CF1b79E54d80fAB5De924efdC1e90d9",
+    "contractAddress": "0xE125F57EAF50C4e93B8c24c5c49D405e51D7122D",
     "abi": [
       {
         "inputs": [],
@@ -5363,7 +5311,7 @@
     ]
   },
   "RewardsDistributor": {
-    "contractAddress": "0xb086748cd5b4Cba2e129A40436B3D6Ab6d22ecDE",
+    "contractAddress": "0xB0fB574206EC4692bd2b11c23Bc50B0240a32193",
     "abi": [
       {
         "inputs": [
@@ -5756,7 +5704,7 @@
     ]
   },
   "MinterUpgradeable": {
-    "contractAddress": "0x18b61D2643e3c33c253297c37D3E2E31B7e13eD6",
+    "contractAddress": "0x4FF0fbcF0EAf3aD57779562F11969A070B013294",
     "abi": [
       {
         "inputs": [],
@@ -6324,7 +6272,7 @@
     ]
   },
   "TradeHelper": {
-    "contractAddress": "0xc2a9e1dE895a2f8D9F82E67F46ea2cD1BE1f2087",
+    "contractAddress": "0x2203cEf33764a133138528095bd88dacF669F196",
     "abi": [
       {
         "inputs": [
@@ -6677,7 +6625,7 @@
     ]
   },
   "Router": {
-    "contractAddress": "0xAA348871551E1984F66A9CE0D58970BaB2766de8",
+    "contractAddress": "0xf8f04e8e8152B182A904102359C66215F30c413D",
     "abi": [
       {
         "inputs": [
