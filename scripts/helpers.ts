@@ -26,8 +26,8 @@ export async function deploy<T>(contractName: string, ...args: any[]) {
   return deployment as unknown as T;
 }
 
-export async function getContractWithAddress<T>(address: string) {
-  const abi = getAbiFromPath("WETH", "WETH.sol");
+export async function getContractWithAddress<T>(address: string, contractName: string, abiPathName: string = "/") {
+  const abi = getAbiFromPath(contractName, abiPathName);
   // Get contract at
   const contractAt = await ethers.getContractAt(abi, address);
   return contractAt as T;
