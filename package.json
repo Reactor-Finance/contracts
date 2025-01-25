@@ -39,6 +39,7 @@
     "compile": "npx hardhat compile",
     "jsonify": "npx hardhat solidity-json",
     "build": "yarn clean && yarn compile && yarn jsonify",
-    "deploy:core": "npx hardhat run scripts/core/deploy.ts"
+    "deploy:core": "npx hardhat run scripts/core/deploy.ts",
+    "deploy:pairs": "npx hardhat run scripts/core/deploy-pairs.ts"
   }
 }

@@ -34,7 +34,7 @@ async function main() {
     weth = await deploy<WETH>("WETH", shape.wrappedEther.name, shape.wrappedEther.symbol);
     await writeOutput(hardhat, weth, "WETH", "WETH.sol");
   } else {
-    weth = await getContractWithAddress<WETH>(shape.wrappedEther);
+    weth = await getContractWithAddress<WETH>(shape.wrappedEther, "WETH", "WETH.sol");
   }
   // Deploy permissions registry
   const prg = await deploy<PermissionsRegistry>("PermissionsRegistry");
