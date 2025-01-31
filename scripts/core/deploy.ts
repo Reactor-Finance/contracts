@@ -5,12 +5,15 @@ import {
   MinterUpgradeable,
   Pair,
   PairFactory,
+  PairHelper,
   PermissionsRegistry,
   Reactor,
+  RewardHelper,
   RewardsDistributor,
   Router,
   TradeHelper,
   VeArtProxyUpgradeable,
+  VeNFTHelper,
   Voter,
   VotingEscrow,
   WETH
@@ -87,6 +90,20 @@ async function main() {
   // Deploy router
   const router = await deploy<Router>("Router", tradeHelper.address, weth.address);
   await writeOutput(hardhat, router, "Router", "Router.sol");
+
+  // ***** Other APIs *****
+  // Deploy pair helper
+  const pairHelper = await deploy<PairHelper>("PairHelper");
+  await writeOutput(hardhat, pairHelper, "PairHelper", "api/PairHelper.sol");
+  await pairHelper.initialize(voter.address);
+  // Deploy reward helper
+  const rewardHelper = await deploy<RewardHelper>("RewardHelper");
+  await writeOutput(hardhat, rewardHelper, "RewardHelper", "api/RewardHelper.sol");
+  await rewardHelper.initialize(voter.address);
+  // Deploy veNFT helper
+  const veNFTHelper = await deploy<VeNFTHelper>("veNFTHelper");
+  await writeOutput(hardhat, veNFTHelper, "veNFTHelper", "api/veNFTHelper.sol");
+  await veNFTHelper.initialize(voter.address, rewardsDistributor.address, pairHelper.address);
 }
 
 main()

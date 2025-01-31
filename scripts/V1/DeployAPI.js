@@ -8,23 +8,23 @@ async function main() {
   const wbribe = ethers.utils.getAddress("0x99443A69d163aEabadcB00C3D04a0AC544De8962");
   const rewDistro = ethers.utils.getAddress("0x3eb5EF1eF1C85AF63d0d4B0856803732239196e9");
   const pairFactory = ethers.utils.getAddress("0x27DfD2D7b85e0010542da35C6EBcD59E45fc949D");
-  const pairapi = ethers.utils.getAddress("0x2b481d200c6679840435c9997dc2499fda752e09");
+  const PairHelper = ethers.utils.getAddress("0x2b481d200c6679840435c9997dc2499fda752e09");
 
   console.log("Deploying Contract...");
 
-  /*data = await ethers.getContractFactory("PairAPI");
-  pairApi = await data.deploy(voter,wbribe);
-  txDeployed = await pairApi.deployed();
-  console.log("pairApi: ", pairApi.address)*/
+  /*data = await ethers.getContractFactory("PairHelper");
+  PairHelper = await data.deploy(voter,wbribe);
+  txDeployed = await PairHelper.deployed();
+  console.log("PairHelper: ", PairHelper.address)*/
 
   /*data = await ethers.getContractFactory("veNFTAPI");
-  veNFTAPI = await data.deploy(voter, rewDistro, pairApi.address, pairFactory);
+  veNFTAPI = await data.deploy(voter, rewDistro, PairHelper.address, pairFactory);
   txDeployed = await veNFTAPI.deployed();
   console.log("veNFTAPI: ", veNFTAPI.address)*/
 
   // deploy
   data = await ethers.getContractFactory("veNFTAPI");
-  input = [voter, rewDistro, pairapi, pairFactory];
+  input = [voter, rewDistro, PairHelper, pairFactory];
   venftapi = await upgrades.deployProxy(data, input, { initializer: "initialize" });
   txDeployed = await venftapi.deployed();
   console.log("veNFTAPI: ", venftapi.address);

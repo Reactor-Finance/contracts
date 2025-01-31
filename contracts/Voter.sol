@@ -20,17 +20,19 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {IVoter} from "./interfaces/IVoter.sol";
 
 interface IHypervisor {
     function pool() external view returns (address);
 }
 
-contract Voter is OwnableUpgradeable, ReentrancyGuardUpgradeable {
+contract Voter is IVoter, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     bool internal initflag;
 
-    address public _ve; // rct ve token that governs these contracts
+    address public factory;
+    address public ve; // rct ve token that governs these contracts
     address[] internal _factories; // Array with all the pair factories
     address internal base; // $rct token
     address[] internal _gaugeFactories; // array with all the gauge factories
@@ -89,15 +91,16 @@ contract Voter is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     constructor() {}
 
-    function initialize(address __ve, address _pairFactory, address _gaugeFactory, address _bribes) public initializer {
+    function initialize(address _ve, address _pairFactory, address _gaugeFactory, address _bribes) public initializer {
         __Ownable_init();
         __ReentrancyGuard_init();
 
-        _ve = __ve;
-        base = IVotingEscrow(__ve).token();
+        ve = _ve;
+        base = IVotingEscrow(_ve).token();
 
         _factories.push(_pairFactory);
         isFactory[_pairFactory] = true;
+        factory = _pairFactory;
 
         _gaugeFactories.push(_gaugeFactory);
         isGaugeFactory[_gaugeFactory] = true;
@@ -335,9 +338,9 @@ contract Voter is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /// @notice Reset the votes of a given TokenID
     function reset(uint256 _tokenId) external nonReentrant {
         _voteDelay(_tokenId);
-        require(IVotingEscrow(_ve).isApprovedOrOwner(msg.sender, _tokenId), "!approved/Owner");
+        require(IVotingEscrow(ve).isApprovedOrOwner(msg.sender, _tokenId), "!approved/Owner");
         _reset(_tokenId);
-        IVotingEscrow(_ve).abstain(_tokenId);
+        IVotingEscrow(ve).abstain(_tokenId);
         lastVoted[_tokenId] = _epochTimestamp() + 1;
     }
 
@@ -377,7 +380,7 @@ contract Voter is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /// @notice Recast the saved votes of a given TokenID
     function poke(uint256 _tokenId) external nonReentrant {
         _voteDelay(_tokenId);
-        require(IVotingEscrow(_ve).isApprovedOrOwner(msg.sender, _tokenId), "!approved/Owner");
+        require(IVotingEscrow(ve).isApprovedOrOwner(msg.sender, _tokenId), "!approved/Owner");
         address[] memory _poolVote = poolVote[_tokenId];
         uint256 _poolCnt = _poolVote.length;
         uint256[] memory _weights = new uint256[](_poolCnt);
@@ -396,7 +399,7 @@ contract Voter is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /// @param  _weights    array of weights for each LPs   (eg.: [10               , 90            , 45             ,...])
     function vote(uint256 _tokenId, address[] calldata _poolVote, uint256[] calldata _weights) external nonReentrant {
         _voteDelay(_tokenId);
-        require(IVotingEscrow(_ve).isApprovedOrOwner(msg.sender, _tokenId), "!approved/Owner");
+        require(IVotingEscrow(ve).isApprovedOrOwner(msg.sender, _tokenId), "!approved/Owner");
         require(_poolVote.length == _weights.length, "Pool/Weights length !=");
         _vote(_tokenId, _poolVote, _weights);
         lastVoted[_tokenId] = _epochTimestamp() + 1;
@@ -405,7 +408,7 @@ contract Voter is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     function _vote(uint256 _tokenId, address[] memory _poolVote, uint256[] memory _weights) internal {
         _reset(_tokenId);
         uint256 _poolCnt = _poolVote.length;
-        uint256 _weight = IVotingEscrow(_ve).balanceOfNFT(_tokenId);
+        uint256 _weight = IVotingEscrow(ve).balanceOfNFT(_tokenId);
         uint256 _totalVoteWeight = 0;
         uint256 _totalWeight = 0;
         uint256 _usedWeight = 0;
@@ -438,7 +441,7 @@ contract Voter is OwnableUpgradeable, ReentrancyGuardUpgradeable {
                 emit Voted(msg.sender, _tokenId, _poolWeight);
             }
         }
-        if (_usedWeight > 0) IVotingEscrow(_ve).voting(_tokenId);
+        if (_usedWeight > 0) IVotingEscrow(ve).voting(_tokenId);
         totalWeightsPerEpoch[_time] += _totalWeight;
     }
 
@@ -451,7 +454,7 @@ contract Voter is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     /// @notice claim bribes rewards given a TokenID
     function claimBribes(address[] memory _bribes, address[][] memory _tokens, uint256 _tokenId) external {
-        require(IVotingEscrow(_ve).isApprovedOrOwner(msg.sender, _tokenId), "!approved/Owner");
+        require(IVotingEscrow(ve).isApprovedOrOwner(msg.sender, _tokenId), "!approved/Owner");
         for (uint256 i = 0; i < _bribes.length; i++) {
             IBribe(_bribes[i]).getRewardForOwner(_tokenId, _tokens[i]);
         }
@@ -459,7 +462,7 @@ contract Voter is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     /// @notice claim fees rewards given a TokenID
     function claimFees(address[] memory _fees, address[][] memory _tokens, uint256 _tokenId) external {
-        require(IVotingEscrow(_ve).isApprovedOrOwner(msg.sender, _tokenId), "!approved/Owner");
+        require(IVotingEscrow(ve).isApprovedOrOwner(msg.sender, _tokenId), "!approved/Owner");
         for (uint256 i = 0; i < _fees.length; i++) {
             IBribe(_fees[i]).getRewardForOwner(_tokenId, _tokens[i]);
         }
@@ -570,7 +573,7 @@ contract Voter is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         // create gauge
         _gauge = IGaugeFactory(_gaugeFactory).createGauge(
             base,
-            _ve,
+            ve,
             _pool,
             address(this),
             _internal_bribe,
