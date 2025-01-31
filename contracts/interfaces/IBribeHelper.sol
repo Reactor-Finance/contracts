@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-interface IBribeAPI {
+interface IBribeHelper {
     struct Reward {
         uint256 periodFinish;
         uint256 rewardsPerEpoch;

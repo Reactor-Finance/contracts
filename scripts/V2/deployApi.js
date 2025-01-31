@@ -10,11 +10,11 @@ async function main() {
   const rewDistro = ethers.utils.getAddress("0xE9fE83aA430Ace4b703C299701142f9dFdde730E");
 
   // deploy
-  data = await ethers.getContractFactory("PairAPI");
+  data = await ethers.getContractFactory("PairHelper");
   input = [voter];
-  PairAPI = await upgrades.deployProxy(data, input, { initializer: "initialize" });
-  txDeployed = await PairAPI.deployed();
-  console.log("PairAPI: ", PairAPI.address);
+  PairHelper = await upgrades.deployProxy(data, input, { initializer: "initialize" });
+  txDeployed = await PairHelper.deployed();
+  console.log("PairHelper: ", PairHelper.address);
 
   // deploy
   data = await ethers.getContractFactory("RewardAPI");
@@ -25,15 +25,15 @@ async function main() {
 
   // deploy
   data = await ethers.getContractFactory("veNFTAPI");
-  input = [voter, rewDistro, PairAPI.address];
+  input = [voter, rewDistro, PairHelper.address];
   veNFTAPI = await upgrades.deployProxy(data, input, { initializer: "initialize" });
   txDeployed = await veNFTAPI.deployed();
   console.log("veNFTAPI: ", veNFTAPI.address);
 
-  /*const data = await ethers.getContractFactory('PairAPI');
-   console.log('PairAPI...');
+  /*const data = await ethers.getContractFactory('PairHelper');
+   console.log('PairHelper...');
    await upgrades.upgradeProxy('0xE89080cEb6CAEb9Eba5a0d4Aa13686eFcB78A32E', data);
-   console.log('PairAPI upgraded');*/
+   console.log('PairHelper upgraded');*/
 }
 
 main()

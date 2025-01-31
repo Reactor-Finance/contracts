@@ -15,15 +15,7 @@ contract Bribe is IBribe, ReentrancyGuard {
     uint256 public constant WEEK = 7 days; // rewards are released over 7 days
     uint256 public firstBribeTimestamp;
 
-    /* ========== STATE VARIABLES ========== */
-
-    struct Reward {
-        uint256 periodFinish;
-        uint256 rewardsPerEpoch;
-        uint256 lastUpdateTime;
-    }
-
-    mapping(address => mapping(uint256 => Reward)) public rewardData; // token -> startTimestamp -> Reward
+    mapping(address => mapping(uint256 => IBribe.Reward)) public rewardData; // token -> startTimestamp -> Reward
     mapping(address => bool) public isRewardToken;
     address[] public rewardTokens;
     address public voter;
