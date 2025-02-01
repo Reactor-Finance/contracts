@@ -29,16 +29,17 @@ interface TokensShape {
   [key: string]: string[];
 }
 
-const weth: TokenShape = {
-  beraBartio: "0x7507c1dc16935B82698e4C63f2746A2fCf994dF8"
-};
+// const weth: TokenShape = {
+//   beraBartio: "0x7507c1dc16935B82698e4C63f2746A2fCf994dF8"
+// };
 
 const tokens: TokensShape = {
   beraBartio: [
     "0xd6D83aF58a19Cd14eF3CF6fe848C9A4d21e5727c",
     "0x05D0dD5135E3eF3aDE32a9eF9Cb06e8D37A6795D",
     "0x806Ef538b228844c73E8E692ADCFa8Eb2fCF729c"
-  ]
+  ],
+  monadDevnet: ["0xA4A30ca987ee3e9de0b2dAca60C37e5E7e4EDa9D"]
 };
 
 function readDeploymentsOutput(hardhatEnv: HardhatRuntimeEnvironment) {
@@ -109,7 +110,7 @@ async function main() {
   // Reactor address
   const rct = deployments.Reactor.contractAddress;
   // WETH
-  const eth = weth[hardhat.network.name];
+  const eth = deployments.WETH.contractAddress;
   // Factory contract
   const fc = await getContractWithAddress<PairFactory>(factory, "PairFactory", "factories/PairFactory.sol");
   // Create RCT/WETH pair

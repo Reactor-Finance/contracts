@@ -1,0 +1,32 @@
+{
+  "0x149f1b053Cd58220E4311Efa2dCb867783E5F780": {
+    "token0": "0x14Cd5F86b184AD00D237Db8b7F626B8BF6473fF6",
+    "token1": "0xf6a6a429a0b9676293Df0E3616A6a33cA673b5C3",
+    "name": "Volatile AMM - RCT/WMON",
+    "symbol": "vAMM-RCT/WMON"
+  },
+  "0x77844ecd0dBbc7a31D25836117204082b7C4B631": {
+    "token0": "0x14Cd5F86b184AD00D237Db8b7F626B8BF6473fF6",
+    "token1": "0xA4A30ca987ee3e9de0b2dAca60C37e5E7e4EDa9D",
+    "name": "Volatile AMM - RCT/USDC",
+    "symbol": "vAMM-RCT/USDC"
+  },
+  "0x1Bca0F256eB9079960aAD2dc78AA388520377A0e": {
+    "token0": "0x14Cd5F86b184AD00D237Db8b7F626B8BF6473fF6",
+    "token1": "0xA4A30ca987ee3e9de0b2dAca60C37e5E7e4EDa9D",
+    "name": "Stable AMM - RCT/USDC",
+    "symbol": "sAMM-RCT/USDC"
+  },
+  "0xF4346b1fD41b8d3AeF30CD5013FC953303d73A9D": {
+    "token0": "0xA4A30ca987ee3e9de0b2dAca60C37e5E7e4EDa9D",
+    "token1": "0xf6a6a429a0b9676293Df0E3616A6a33cA673b5C3",
+    "name": "Volatile AMM - USDC/WMON",
+    "symbol": "vAMM-USDC/WMON"
+  },
+  "0x908f3fcdaECd6F5a0D815701149286D55AF9b741": {
+    "token0": "0xA4A30ca987ee3e9de0b2dAca60C37e5E7e4EDa9D",
+    "token1": "0xf6a6a429a0b9676293Df0E3616A6a33cA673b5C3",
+    "name": "Stable AMM - USDC/WMON",
+    "symbol": "sAMM-USDC/WMON"
+  }
+}
