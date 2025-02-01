@@ -64,6 +64,15 @@ const config = {
       gasMultiplier: 1
     },
 
+    monadTestnet: {
+      url: "https://rpc.monad-testnet.category.xyz/rpc/k1e4ki8vesb3xik9kh9vflrtne7wzfl0egbezayc",
+      chainId: 10143,
+      accounts: [PRIVATE_KEY],
+      gasPrice: "auto",
+      gas: "auto",
+      gasMultiplier: 1
+    },
+
     abstractTestnet: {
       url: "https://api.testnet.abs.xyz",
       chainId: 11124,
