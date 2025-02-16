@@ -22,10 +22,7 @@ export const __CONSTANTS__: NetworkConstantsShape = {
     defaultRewardTokens: [],
     initialMintRecipients: ["0xb69DB7b7B3aD64d53126DCD1f4D5fBDaea4fF578", "0x2749fb5F7737F3ED173aa5bA5e56BAB551AE77d7"],
     initialMintAmounts: [BigInt(7_000_000 * 1e18), BigInt(3_000_000 * 1e18)],
-    wrappedEther: {
-      name: "Wrapped Monad",
-      symbol: "WMON"
-    }
+    wrappedEther: "0x760AfE86e5de5fa0Ee542fc7B7B713e1c5425701"
   },
   monadDevnet: {
     teamAddress: "0xb69DB7b7B3aD64d53126DCD1f4D5fBDaea4fF578",
