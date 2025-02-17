@@ -34,6 +34,17 @@ export const __CONSTANTS__: NetworkConstantsShape = {
       symbol: "WMON"
     }
   },
+
+  tarpPrivateTestnet: {
+    teamAddress: "0xb69DB7b7B3aD64d53126DCD1f4D5fBDaea4fF578",
+    defaultRewardTokens: [],
+    initialMintRecipients: ["0x70997970C51812dc3A010C7d01b50e0d17dc79C8", "0x90F79bf6EB2c4f870365E785982E1f101E93b906"],
+    initialMintAmounts: [BigInt(7_000_000 * 1e18), BigInt(3_000_000 * 1e18)],
+    wrappedEther: {
+      name: "Wrapped Tarp",
+      symbol: "WTARP"
+    }
+  },
   beraBartio: {
     teamAddress: "0xb69DB7b7B3aD64d53126DCD1f4D5fBDaea4fF578",
     defaultRewardTokens: [],

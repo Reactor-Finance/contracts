@@ -4,7 +4,7 @@ require("@nomicfoundation/hardhat-verify");
 require("@typechain/hardhat");
 require("@xyrusworx/hardhat-solidity-json");
 
-const { PRIVATE_KEY, MONAD_API_KEY } = require("./env.js");
+const { PRIVATE_KEY, MONAD_API_KEY, TARP_PRIVATE_KEY, TARP_RPC_URL } = require("./env.js");
 
 /**
  * @type {import("hardhat/types").HardhatUserConfig}
@@ -72,7 +72,11 @@ const config = {
       gas: "auto",
       gasMultiplier: 1
     },
-
+    tarpPrivateTestnet: {
+      url: TARP_RPC_URL,
+      accounts: [TARP_PRIVATE_KEY],
+      chainId: 1
+    },
     abstractTestnet: {
       url: "https://api.testnet.abs.xyz",
       chainId: 11124,
