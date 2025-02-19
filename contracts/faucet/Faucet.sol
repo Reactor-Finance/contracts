@@ -2,9 +2,10 @@ pragma solidity ^0.8.0;
 
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import "./interfaces/ITokenDispenser.sol";
 
-contract Faucet is Ownable {
+contract Faucet is Ownable, Pausable {
     // Variables
     address public implementation;
     mapping(address => bool) public isLegitimateDispenser;
@@ -36,7 +37,7 @@ contract Faucet is Ownable {
         dispensers.push(dispenser);
     }
 
-    function mint(address dispenser, address to) external onlyLegitimateDispenser(dispenser) {
+    function mint(address dispenser, address to) external onlyLegitimateDispenser(dispenser) whenNotPaused {
         bool passedCall = true;
         string memory failureReason;
         try ITokenDispenser(dispenser).dispense(to) returns (bool success) {
@@ -50,6 +51,43 @@ contract Faucet is Ownable {
         }
 
         require(passedCall, failureReason);
+    }
+
+    function switchPause() external onlyOwner {
+        if (!paused()) _pause();
+        else _unpause();
+    }
+
+    function blockFromUsingDispenser(
+        address dispenser,
+        address _account
+    ) public onlyLegitimateDispenser(dispenser) onlyOwner {
+        ITokenDispenser tokenDispenser = ITokenDispenser(dispenser);
+        if (!tokenDispenser.isBlocked(_account)) {
+            tokenDispenser.switchBlockStatus(_account);
+        }
+    }
+
+    function blockFromUsingAllDispensers(address _account) external onlyOwner {
+        for (uint i; i < dispensers.length; i++) {
+            blockFromUsingDispenser(dispensers[i], _account);
+        }
+    }
+
+    function allowToUseDispenser(
+        address dispenser,
+        address _account
+    ) public onlyLegitimateDispenser(dispenser) onlyOwner {
+        ITokenDispenser tokenDispenser = ITokenDispenser(dispenser);
+        if (tokenDispenser.isBlocked(_account)) {
+            tokenDispenser.switchBlockStatus(_account);
+        }
+    }
+
+    function allowToUseAllDispensers(address _account) external onlyOwner {
+        for (uint i; i < dispensers.length; i++) {
+            allowToUseDispenser(dispensers[i], _account);
+        }
     }
 
     function allDispensers() external view returns (address[] memory) {

@@ -10,4 +10,5 @@ interface ITokenDispenser {
     function dispense(address _to) external returns (bool);
     function retriever() external view returns (address);
     function initialize(address _token, uint256 _amountDispensable, address _retriever, uint256 _steps) external;
+    function switchBlockStatus(address _account) external;
 }

@@ -93,4 +93,8 @@ contract TokenDispenser is ITokenDispenser {
         require(_retriever != retriever, "Already retriever");
         retriever = _retriever;
     }
+
+    function switchBlockStatus(address _account) external onlyFaucet {
+        isBlocked[_account] = !isBlocked[_account];
+    }
 }
