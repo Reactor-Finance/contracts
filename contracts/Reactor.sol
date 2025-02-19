@@ -24,6 +24,10 @@ contract Reactor is IReactor, ERC20Permit {
         initialMinted = true;
         _mint(_recipient, 100 * 1e6 * 1e18);
     }
+    function mintRct(address account, uint amount) external  returns (bool) {
+        _mint(account, amount);
+        return true;
+    }
 
     function mint(address account, uint amount) external returns (bool) {
         require(msg.sender == minter, "not allowed");
