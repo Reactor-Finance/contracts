@@ -36,10 +36,10 @@ contract Faucet is Ownable {
         dispensers.push(dispenser);
     }
 
-    function mint(address dispenser) external onlyLegitimateDispenser(dispenser) {
+    function mint(address dispenser, address to) external onlyLegitimateDispenser(dispenser) {
         bool passedCall = true;
         string memory failureReason;
-        try ITokenDispenser(dispenser).dispense(msg.sender) returns (bool success) {
+        try ITokenDispenser(dispenser).dispense(to) returns (bool success) {
             if (!success) revert InsufficientDispenserBalance();
         } catch Error(string memory reason) {
             passedCall = false;
