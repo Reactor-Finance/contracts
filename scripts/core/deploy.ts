@@ -3,6 +3,7 @@ import {
   BribeFactory,
   GaugeFactory,
   MinterUpgradeable,
+  Oracle,
   Pair,
   PairFactory,
   PairHelper,
@@ -104,6 +105,9 @@ async function main() {
   const veNFTHelper = await deploy<VeNFTHelper>("veNFTHelper");
   await writeOutput(hardhat, veNFTHelper, "veNFTHelper", "api/veNFTHelper.sol");
   await veNFTHelper.initialize(voter.address, rewardsDistributor.address, pairHelper.address);
+  // Deploy oracle
+  const oracle = await deploy<Oracle>("Oracle", []);
+  await writeOutput(hardhat, oracle, "Oracle", "oracle/Oracle.sol");
 }
 
 main()

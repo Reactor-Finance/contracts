@@ -1,6 +1,6 @@
 {
   "Reactor": {
-    "contractAddress": "0xe9930BD6AA756Cd579e23C7464dD0Af23474bb68",
+    "contractAddress": "0x380f6F27E1Ce7C6E5c6D5057b13923a49cb5BD37",
     "abi": [
       {
         "inputs": [],
@@ -604,7 +604,7 @@
     ]
   },
   "PermissionsRegistry": {
-    "contractAddress": "0xB8da258a2B2A8AE31Aab6494D7DC784dC96e5b78",
+    "contractAddress": "0xC05b371680057B55e23C27d23453592cdf972Ec1",
     "abi": [
       {
         "inputs": [],

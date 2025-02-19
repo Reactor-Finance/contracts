@@ -95,7 +95,11 @@ async function main() {
   // Deploy veNFT helper
   const veNFTHelper = await deploy<VeNFTHelper>("veNFTHelper");
   await writeOutput(hardhat, veNFTHelper, "veNFTHelper", "api/veNFTHelper.sol");
-  await veNFTHelper.initialize(deployments.Voter.contractAddress, deployments.RewardsDistributor.contractAddress, deployments.PairHelper.contractAddress);
+  await veNFTHelper.initialize(
+    deployments.Voter.contractAddress,
+    deployments.RewardsDistributor.contractAddress,
+    deployments.PairHelper.contractAddress
+  );
 }
 
 main()

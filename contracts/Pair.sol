@@ -26,6 +26,7 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
     address public token1;
     address public fees;
     address public factory;
+    address public DEAD_ADDRESS = address(0x000000000000000000000000000000000000dEaD);
 
     // Structure to capture time period obervations every 30 minutes, used for local oracles
     struct Observation {
@@ -316,7 +317,7 @@ contract Pair is IPair, ERC20Permit, ReentrancyGuard {
         uint _totalSupply = totalSupply(); // gas savings, must be defined here since totalSupply can update in _mintFee
         if (_totalSupply == 0) {
             liquidity = Math.sqrt(_amount0 * _amount1) - MINIMUM_LIQUIDITY;
-            _mint(address(0), MINIMUM_LIQUIDITY); // permanently lock the first MINIMUM_LIQUIDITY tokens
+            _mint(DEAD_ADDRESS, MINIMUM_LIQUIDITY); // permanently lock the first MINIMUM_LIQUIDITY tokens
         } else {
             liquidity = Math.min((_amount0 * _totalSupply) / _reserve0, (_amount1 * _totalSupply) / _reserve1);
         }
