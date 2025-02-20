@@ -2,6 +2,7 @@ import hardhat from "hardhat";
 import {
   BribeFactory,
   MinterUpgradeable,
+  Oracle,
   PairHelper,
   Reactor,
   RewardHelper,
@@ -43,18 +44,16 @@ async function main() {
   const shape = __CONSTANTS__[hardhat.network.name];
   // Get deployments
   const deployments = readDeploymentsOutput(hardhat);
-  // Deploy voter
-  // const voter = await deploy<Voter>("Voter");
-  // await writeOutput(hardhat, voter, "Voter", "Voter.sol");
-  // // Deploy bribe factory
+  // Deploy bribe factory
   // const bribeFactory = await deploy<BribeFactory>("BribeFactory");
   // await writeOutput(hardhat, bribeFactory, "BribeFactory", "factories/BribeFactory.sol");
   // // Initialize bribe factory, and voter
-  // await bribeFactory.initialize(voter.address, deployments.PermissionsRegistry.contractAddress, [
+  // await bribeFactory.initialize(deployments.Voter.contractAddress, deployments.PermissionsRegistry.contractAddress, [
   //   ...shape.defaultRewardTokens,
-  //   deployments.WETH.contractAddress,
+  //   shape.wrappedEther as string,
   //   deployments.Reactor.contractAddress
   // ]);
+  // const voter = await getContractWithAddress<Voter>(deployments.Voter.contractAddress, "Voter", "Voter.sol");
   // await voter.initialize(
   //   deployments.VotingEscrow.contractAddress,
   //   deployments.PairFactory.contractAddress,
@@ -75,23 +74,23 @@ async function main() {
   // // Mint initial
   // await minter._initialize(shape.initialMintRecipients, shape.initialMintAmounts, BigInt(100_000_000 * 1e18));
 
-  // ***** Trading *****
-  // Deploy trade helper
+  // // ***** Trading *****
+  // // Deploy trade helper
   // const tradeHelper = await deploy<TradeHelper>("TradeHelper", deployments.PairFactory.contractAddress);
   // await writeOutput(hardhat, tradeHelper, "TradeHelper", "api/TradeHelper.sol");
-  // Deploy router
-  const router = await deploy<Router>("Router", deployments.TradeHelper.contractAddress, shape.wrappedEther as string);
-  await writeOutput(hardhat, router, "Router", "Router.sol");
+  // // Deploy router
+  // const router = await deploy<Router>("Router", tradeHelper.address, shape.wrappedEther as string);
+  // await writeOutput(hardhat, router, "Router", "Router.sol");
 
-  // ***** Other APIs *****
-  // Deploy pair helper
+  // // ***** Other APIs *****
+  // // Deploy pair helper
   // const pairHelper = await deploy<PairHelper>("PairHelper");
   // await writeOutput(hardhat, pairHelper, "PairHelper", "api/PairHelper.sol");
-  // await pairHelper.initialize(deployments.Voter.contractAddress);
-  // Deploy reward helper
-  const rewardHelper = await deploy<RewardHelper>("RewardHelper");
-  await writeOutput(hardhat, rewardHelper, "RewardHelper", "api/RewardHelper.sol");
-  await rewardHelper.initialize(deployments.Voter.contractAddress);
+  // await pairHelper.initialize(voter.address);
+  // // Deploy reward helper
+  // const rewardHelper = await deploy<RewardHelper>("RewardHelper");
+  // await writeOutput(hardhat, rewardHelper, "RewardHelper", "api/RewardHelper.sol");
+  // await rewardHelper.initialize(voter.address);
   // Deploy veNFT helper
   const veNFTHelper = await deploy<VeNFTHelper>("veNFTHelper");
   await writeOutput(hardhat, veNFTHelper, "veNFTHelper", "api/veNFTHelper.sol");
@@ -100,6 +99,9 @@ async function main() {
     deployments.RewardsDistributor.contractAddress,
     deployments.PairHelper.contractAddress
   );
+  // Deploy oracle
+  const oracle = await deploy<Oracle>("Oracle", []);
+  await writeOutput(hardhat, oracle, "Oracle", "oracle/Oracle.sol");
 }
 
 main()
