@@ -21,7 +21,9 @@ contract Faucet is Ownable, Pausable {
         _;
     }
 
-    constructor() Ownable(msg.sender) {}
+    constructor(address _impl) Ownable(msg.sender) {
+        implementation = _impl;
+    }
 
     function deployDispenser(
         address _token,
