@@ -45,6 +45,7 @@
     "deploy:voter:rest": "npx hardhat run scripts/core/deploy-voter-and-rest.ts",
     "deploy:reactor:price:source": "npx hardhat run scripts/core/deploy-price-source.ts",
     "deploy:faucet": "npx hardhat run scripts/core/deploy-faucet.ts",
-    "simplify": "npx hardhat run scripts/simplifyDeployments.ts"
+    "simplify": "npx hardhat run scripts/simplifyDeployments.ts",
+    "create:pairs": "npx hardhat run scripts/createPairs.ts"
   }
 }
