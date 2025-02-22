@@ -46,6 +46,7 @@
     "deploy:reactor:price:source": "npx hardhat run scripts/core/deploy-price-source.ts",
     "deploy:faucet": "npx hardhat run scripts/core/deploy-faucet.ts",
     "simplify": "npx hardhat run scripts/simplifyDeployments.ts",
-    "create:pairs": "npx hardhat run scripts/createPairs.ts"
+    "create:pairs": "npx hardhat run scripts/createPairs.ts",
+    "create:mock:tokens": "npx hardhat run scripts/createMockTokens.ts"
   }
 }

@@ -65,7 +65,8 @@ const config = {
     },
 
     monadTestnet: {
-      url: "https://10143.rpc.thirdweb.com/f4f634aad888c9e6d43dd22ed5d02158",
+      url: "https://testnet-rpc.monad.xyz",
+      // url: "https://10143.rpc.thirdweb.com/f4f634aad888c9e6d43dd22ed5d02158",
       chainId: 10143,
       accounts: [PRIVATE_KEY],
       gasPrice: "auto",
