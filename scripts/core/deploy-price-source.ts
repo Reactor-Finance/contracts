@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 import hardhat from "hardhat";
 import { deploy, getContractWithAddress } from "../helpers";
-import { Oracle, Pair, PairFactory, ReactorPriceSource } from "../../artifacts/types";
+import { Oracle, ReactorPriceSource } from "../../artifacts/types";
 import { __CONSTANTS__ } from "../constants";
 
 interface DeploymentsOutputShape {
@@ -16,10 +16,6 @@ interface DeploymentsOutputShape {
 interface OutputShape {
   [key: string]: string;
 }
-
-const tokens = {
-  monadTestnet: {}
-};
 
 function readDeploymentsOutput(hardhatEnv: HardhatRuntimeEnvironment) {
   // Network

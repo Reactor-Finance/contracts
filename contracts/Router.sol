@@ -85,7 +85,7 @@ contract Router {
         }
     }
 
-    function _swapSupportingFeeOnTransferTokens(ITradeHelper.Route[] calldata routes, address _to) internal virtual {
+    function _swapSupportingFeeOnTransferTokens(ITradeHelper.Route[] memory routes, address _to) internal virtual {
         for (uint i; i < routes.length; i++) {
             (address input, address output) = (routes[i].from, routes[i].to);
             (address token0, ) = tradeHelper.sortTokens(input, output);
@@ -105,6 +105,18 @@ contract Router {
                 : _to;
             pair.swap(amount0Out, amount1Out, to, new bytes(0));
         }
+    }
+
+    function _reshapeRoutes(
+        ITradeHelper.Route[] calldata oldRoutes
+    ) internal view returns (ITradeHelper.Route[] memory) {
+        ITradeHelper.Route[] memory newRoutes = new ITradeHelper.Route[](oldRoutes.length);
+        for (uint i; i < oldRoutes.length; i++) {
+            newRoutes[i].from = oldRoutes[i].from == ETHER ? address(wETH) : oldRoutes[i].from;
+            newRoutes[i].to = oldRoutes[i].to == ETHER ? address(wETH) : oldRoutes[i].to;
+            newRoutes[i].stable = oldRoutes[i].stable;
+        }
+        return newRoutes;
     }
 
     function _addLiquidity(
@@ -301,12 +313,12 @@ contract Router {
         uint deadline,
         bool withFeeOnTransferTokens
     ) external payable ensure(deadline) returns (uint[] memory amounts) {
-        amounts = tradeHelper.getAmountsOut(amountIn, routes);
-        if (!withFeeOnTransferTokens)
-            require(amounts[amounts.length - 1] >= amountOutMin, "Router: INSUFFICIENT_OUTPUT_AMOUNT");
-        address _pair = tradeHelper.pairFor(routes[0].from, routes[0].to, routes[0].stable);
+        amounts = tradeHelper.getAmountsOut(amountIn, _reshapeRoutes(routes));
+        address tokenA = routes[0].from == ETHER ? address(wETH) : routes[0].from;
+        address tokenB = routes[0].to == ETHER ? address(wETH) : routes[0].to;
+        address _pair = tradeHelper.pairFor(tokenA, tokenB, routes[0].stable);
 
-        if (routes[0].from == address(wETH) || routes[0].from == ETHER) {
+        if (routes[0].from == ETHER) {
             require(amountIn == msg.value, "Router: AMOUNT_IN != MSG.VALUE");
             wETH.deposit{value: amounts[0]}();
             assert(wETH.transfer(_pair, amounts[0]));
@@ -314,12 +326,15 @@ contract Router {
             {
                 if (withFeeOnTransferTokens) {
                     uint balanceBefore = IERC20(routes[routes.length - 1].to).balanceOf(to);
-                    _swapSupportingFeeOnTransferTokens(routes, to);
+                    _swapSupportingFeeOnTransferTokens(_reshapeRoutes(routes), to);
                     require(
                         IERC20(routes[routes.length - 1].to).balanceOf(to).sub(balanceBefore) >= amountOutMin,
                         "Router: INSUFFICIENT_OUTPUT_AMOUNT"
                     );
-                } else _swap(amounts, routes, to);
+                } else {
+                    require(amounts[amounts.length - 1] >= amountOutMin, "Router: INSUFFICIENT_OUTPUT_AMOUNT");
+                    _swap(amounts, _reshapeRoutes(routes), to);
+                }
             }
         } else if (routes[routes.length - 1].to == address(wETH) || routes[routes.length - 1].to == ETHER) {
             TransferHelper._safeTransferFromERC20(routes[0].from, msg.sender, _pair, amounts[0]);
@@ -327,11 +342,14 @@ contract Router {
 
             {
                 if (withFeeOnTransferTokens) {
-                    _swapSupportingFeeOnTransferTokens(routes, address(this));
+                    _swapSupportingFeeOnTransferTokens(_reshapeRoutes(routes), address(this));
                     uint amountOut = IERC20(address(wETH)).balanceOf(address(this));
                     require(amountOut >= amountOutMin, "Router: INSUFFICIENT_OUTPUT_AMOUNT");
                     sendAmount = amountOut;
-                } else _swap(amounts, routes, address(this));
+                } else {
+                    require(sendAmount >= amountOutMin, "Router: INSUFFICIENT_OUTPUT_AMOUNT");
+                    _swap(amounts, _reshapeRoutes(routes), address(this));
+                }
             }
 
             wETH.withdraw(sendAmount);
@@ -342,12 +360,15 @@ contract Router {
             {
                 if (withFeeOnTransferTokens) {
                     uint balanceBefore = IERC20(routes[routes.length - 1].to).balanceOf(to);
-                    _swapSupportingFeeOnTransferTokens(routes, to);
+                    _swapSupportingFeeOnTransferTokens(_reshapeRoutes(routes), to);
                     require(
                         IERC20(routes[routes.length - 1].to).balanceOf(to).sub(balanceBefore) >= amountOutMin,
                         "Router: INSUFFICIENT_OUTPUT_AMOUNT"
                     );
-                } else _swap(amounts, routes, to);
+                } else {
+                    require(amounts[amounts.length - 1] >= amountOutMin, "Router: INSUFFICIENT_OUTPUT_AMOUNT");
+                    _swap(amounts, _reshapeRoutes(routes), to);
+                }
             }
         }
     }
