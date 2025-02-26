@@ -39,6 +39,7 @@ async function main() {
     await writeOutput(hardhat, weth, "WETH", "WETH.sol");
   } else {
     weth = await getContractWithAddress<WETH>(shape.wrappedEther, "WETH", "WETH.sol");
+    await writeOutput(hardhat, weth, "WETH", "WETH.sol");
   }
   // Deploy permissions registry
   const prg = await deploy<PermissionsRegistry>("PermissionsRegistry");

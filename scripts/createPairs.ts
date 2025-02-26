@@ -16,7 +16,7 @@ interface PairsOutputShape {
 
 // USDC_&_USDT
 const USDC: { [key: string]: string } = {
-  monadTestnet: "0x62534E4bBD6D9ebAC0ac99aeaa0aa48E56372df0"
+  monadTestnet: "0xf817257fed379853cDe0fa4F97AB987181B1E5Ea"
 };
 const USDT: { [key: string]: string } = {
   monadTestnet: "0x88b8E2161DEDC77EF4ab7585569D2415a1C1055D"
