@@ -6638,7 +6638,7 @@
     ]
   },
   "Router": {
-    "contractAddress": "0x122Ee522cD0aC0bc6c67e8C99b6153D6c898dafd",
+    "contractAddress": "0x0067e92EAa46701c75D77dEb970c568307B086c5",
     "abi": [
       {
         "inputs": [
@@ -7264,6 +7264,10 @@
         ],
         "stateMutability": "view",
         "type": "function"
+      },
+      {
+        "stateMutability": "payable",
+        "type": "receive"
       }
     ]
   },
