@@ -31,6 +31,10 @@ contract Router {
         wETH = _weth;
     }
 
+    receive() external payable {
+        require(msg.sender == address(wETH), "Router: !WETH");
+    }
+
     // given some amount of an asset and pair reserves, returns an equivalent amount of the other asset
     function quoteLiquidity(uint amountA, uint reserveA, uint reserveB) internal pure returns (uint amountB) {
         require(amountA > 0, "Router: INSUFFICIENT_AMOUNT");

@@ -48,6 +48,7 @@
     "deploy:router": "npx hardhat run scripts/core/deploy-router.ts",
     "simplify": "npx hardhat run scripts/simplifyDeployments.ts",
     "create:pairs": "npx hardhat run scripts/createPairs.ts",
-    "create:mock:tokens": "npx hardhat run scripts/createMockTokens.ts"
+    "create:mock:tokens": "npx hardhat run scripts/createMockTokens.ts",
+    "call:dibs": "npx hardhat run scripts/callDibs.ts"
   }
 }
