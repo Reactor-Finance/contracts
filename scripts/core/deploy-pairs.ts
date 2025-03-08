@@ -39,7 +39,7 @@ const tokens: TokensShape = {
     "0x05D0dD5135E3eF3aDE32a9eF9Cb06e8D37A6795D",
     "0x806Ef538b228844c73E8E692ADCFa8Eb2fCF729c"
   ],
-  monadDevnet: ["0xA4A30ca987ee3e9de0b2dAca60C37e5E7e4EDa9D"]
+  monadTestnet: ["0xf817257fed379853cDe0fa4F97AB987181B1E5Ea", "0x88b8E2161DEDC77EF4ab7585569D2415a1C1055D"]
 };
 
 function readDeploymentsOutput(hardhatEnv: HardhatRuntimeEnvironment) {

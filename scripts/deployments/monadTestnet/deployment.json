@@ -1,6 +1,6 @@
 {
   "Reactor": {
-    "contractAddress": "0xE125F57EAF50C4e93B8c24c5c49D405e51D7122D",
+    "contractAddress": "0x02B8FcBE1D7ff6D6652C3A332B6a7B71392B6251",
     "abi": [
       {
         "inputs": [],
@@ -604,7 +604,7 @@
     ]
   },
   "PermissionsRegistry": {
-    "contractAddress": "0x08c883985c67b4a44913FD65fc0bf848a31e7111",
+    "contractAddress": "0x7Ff2dc014305A0E0bb629b7C7ac96bA7eA5332b3",
     "abi": [
       {
         "inputs": [],
@@ -996,7 +996,7 @@
     ]
   },
   "PairFactory": {
-    "contractAddress": "0xB0fB574206EC4692bd2b11c23Bc50B0240a32193",
+    "contractAddress": "0x22595aA7f5298b49D62450DA6300882Fb3d98eBc",
     "abi": [
       {
         "inputs": [
@@ -1379,7 +1379,7 @@
     ]
   },
   "GaugeFactory": {
-    "contractAddress": "0x4FF0fbcF0EAf3aD57779562F11969A070B013294",
+    "contractAddress": "0x76c01f657d3de43B38925299B7cff33a31A107FE",
     "abi": [
       {
         "inputs": [],
@@ -1679,7 +1679,7 @@
     ]
   },
   "VeArtProxyUpgradeable": {
-    "contractAddress": "0xd22E4CdAF270359Df3fA48A15179D364a86ddF6A",
+    "contractAddress": "0x753E21E1B2fE6F9567f0eC8884100BD5c7003C59",
     "abi": [
       {
         "inputs": [],
@@ -1795,7 +1795,7 @@
     ]
   },
   "VotingEscrow": {
-    "contractAddress": "0x2203cEf33764a133138528095bd88dacF669F196",
+    "contractAddress": "0xbe4e46fA5179672c0e606eE97Bf02AD47e7e1910",
     "abi": [
       {
         "inputs": [
@@ -3374,7 +3374,7 @@
     ]
   },
   "Voter": {
-    "contractAddress": "0xf8f04e8e8152B182A904102359C66215F30c413D",
+    "contractAddress": "0x8B72C1cebD63Aea76B6C5B09217A8c8889A3F6ba",
     "abi": [
       {
         "inputs": [],
@@ -4910,7 +4910,7 @@
     ]
   },
   "BribeFactory": {
-    "contractAddress": "0xf437677033E75CeC84035702C7b9c0b87a0e282B",
+    "contractAddress": "0x30aD43C054Ab83A3A553Ba09b1EbA6F24A6de7dc",
     "abi": [
       {
         "inputs": [],
@@ -5324,7 +5324,7 @@
     ]
   },
   "RewardsDistributor": {
-    "contractAddress": "0x9577D95Ba21E537F7e29955FF8Fa8b250CBd9eeF",
+    "contractAddress": "0x38Fd3f88a46239D8CEcB768f8E7620d861D2DE13",
     "abi": [
       {
         "inputs": [
@@ -5717,7 +5717,7 @@
     ]
   },
   "MinterUpgradeable": {
-    "contractAddress": "0x59806b19084CfDe071cE67C25C55677D89873629",
+    "contractAddress": "0x3daD509f4eA243D993B47104562f91d085D4AbD4",
     "abi": [
       {
         "inputs": [],
@@ -6285,7 +6285,7 @@
     ]
   },
   "TradeHelper": {
-    "contractAddress": "0xD59B88727680a026C572fEeD94fB81579c1c1394",
+    "contractAddress": "0x10Bdbe470aF509Ca514A88DEc4911CC958052f1f",
     "abi": [
       {
         "inputs": [
@@ -6638,7 +6638,7 @@
     ]
   },
   "Router": {
-    "contractAddress": "0x0067e92EAa46701c75D77dEb970c568307B086c5",
+    "contractAddress": "0xDeA70f42A5d04Bfde45f27DB7c97563814DaB15C",
     "abi": [
       {
         "inputs": [
@@ -7272,7 +7272,7 @@
     ]
   },
   "PairHelper": {
-    "contractAddress": "0xcD6de9d7f6d2e105cDc4807D83839Bd1442498EB",
+    "contractAddress": "0xf5164104183Fb402d8FDEc6c7BF74C1D5DeD2Ddd",
     "abi": [
       {
         "inputs": [],
@@ -7910,7 +7910,7 @@
     ]
   },
   "RewardHelper": {
-    "contractAddress": "0xCc0Bab6F31626d0A17748fA84cad7738787af9C5",
+    "contractAddress": "0x17eC3Da3C87497fc85e6f59d0a81151dd357AaDd",
     "abi": [
       {
         "inputs": [],
@@ -8118,7 +8118,7 @@
     ]
   },
   "veNFTHelper": {
-    "contractAddress": "0x6485ECf484640395Eb91Fe8DF50e1110D0d4D930",
+    "contractAddress": "0x37F979B20a59f3E2702CaE86c5a8608Ebb81776A",
     "abi": [
       {
         "inputs": [],
@@ -8823,7 +8823,7 @@
     ]
   },
   "Oracle": {
-    "contractAddress": "0x27b14220DD749343979da9ea1434d086f99f2ABB",
+    "contractAddress": "0xAa97c394C26c122F926fEB015237C82a62A98D51",
     "abi": [
       {
         "inputs": [

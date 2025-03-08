@@ -7,7 +7,6 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {IPair} from "./interfaces/IPair.sol";
-import {IDibs} from "./interfaces/IDibs.sol";
 import {IPairCallee} from "./interfaces/IPairCallee.sol";
 import {IPairFactory} from "./interfaces/IPairFactory.sol";
 import {PairFees} from "./PairFees.sol";

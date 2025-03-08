@@ -31,6 +31,8 @@ async function main() {
   // Deploy Reactor
   const rct = await deploy<Reactor>("Reactor");
   await writeOutput(hardhat, rct, "Reactor", "Reactor.sol");
+  // Mint RCT
+  await rct.mint("0xb69DB7b7B3aD64d53126DCD1f4D5fBDaea4fF578", 5_00_000_000_000_000_000_000_000_000n);
   // Deploy weth
   let weth: WETH;
   // Deploy if not a string
@@ -44,6 +46,12 @@ async function main() {
   // Deploy permissions registry
   const prg = await deploy<PermissionsRegistry>("PermissionsRegistry");
   await writeOutput(hardhat, prg, "PermissionsRegistry", "PermissionsRegistry.sol");
+  // Set admin roles
+  await prg.setRoleFor("0xb69DB7b7B3aD64d53126DCD1f4D5fBDaea4fF578", "VOTER_ADMIN");
+  await prg.setRoleFor("0xb69DB7b7B3aD64d53126DCD1f4D5fBDaea4fF578", "BRIBE_ADMIN");
+  await prg.setRoleFor("0xb69DB7b7B3aD64d53126DCD1f4D5fBDaea4fF578", "GAUGE_ADMIN");
+  await prg.setRoleFor("0xb69DB7b7B3aD64d53126DCD1f4D5fBDaea4fF578", "GOVERNANCE");
+  await prg.setRoleFor("0xb69DB7b7B3aD64d53126DCD1f4D5fBDaea4fF578", "FEE_MANAGER");
   // Deploy pair implementation
   const pair = await deploy<Pair>("Pair");
   const impl = pair.address;
@@ -84,6 +92,17 @@ async function main() {
   await rct.setMinter(minter.address);
   // Mint initial
   await minter._initialize(shape.initialMintRecipients, shape.initialMintAmounts, BigInt(100_000_000 * 1e18));
+  await voter._init(
+    [
+      "0x4Ba2ca8F076a8a9A9166d4CB4cCa86f42918a8e6",
+      "0x400883e03aAAE5Eb1dE4273B602c067F8F1E252D",
+      "0x760AfE86e5de5fa0Ee542fc7B7B713e1c5425701",
+      "0xf817257fed379853cDe0fa4F97AB987181B1E5Ea",
+      "0x88b8E2161DEDC77EF4ab7585569D2415a1C1055D"
+    ],
+    prg.address,
+    minter.address
+  );
 
   // ***** Trading *****
   // Deploy trade helper
