@@ -106,6 +106,11 @@ const config = {
     outDir: "./artifacts/types",
     target: "ethers-v5"
   },
+  sourcify: {
+    enabled: true,
+    apiUrl: "https://sourcify-api-monad.blockvision.org",
+    browserUrl: "https://testnet.monadexplorer.com"
+  },
   // etherscan: {
   //   // Your API key for Etherscan
   //   // Obtain one at https://etherscan.io/
