@@ -21,6 +21,7 @@ contract ReactorPriceSource is PriceSource {
         address token1,
         uint256 _amountIn
     ) internal view returns (uint256 amountOut) {
+        if (token0 == token1) return _amountIn;
         (amountOut, ) = tradeHelper.getAmountOut(_amountIn, token0, token1);
     }
 
