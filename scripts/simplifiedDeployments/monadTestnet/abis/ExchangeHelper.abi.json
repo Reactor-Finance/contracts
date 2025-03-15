@@ -77,6 +77,11 @@
         "type": "uint256"
       },
       {
+        "internalType": "uint256[]",
+        "name": "fees",
+        "type": "uint256[]"
+      },
+      {
         "internalType": "contract Pair[]",
         "name": "pairs",
         "type": "address[]"
@@ -112,6 +117,11 @@
         "internalType": "uint256",
         "name": "totalTVL",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "tvls",
+        "type": "uint256[]"
       },
       {
         "internalType": "contract Pair[]",
@@ -170,6 +180,11 @@
         "internalType": "uint256",
         "name": "tvlPerTime",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "volumes",
+        "type": "uint256[]"
       },
       {
         "internalType": "contract Pair[]",
