@@ -9810,7 +9810,7 @@
     ]
   },
   "ExchangeHelper": {
-    "contractAddress": "0x7D7e0040890d06663AcbaDB11Fd5A4aAEc21B825",
+    "contractAddress": "0x0159f1cfE00e287f84d9d4D974Da2FEF1D6099Ac",
     "abi": [
       {
         "inputs": [],
@@ -9907,6 +9907,52 @@
             "internalType": "uint256",
             "name": "totalValue",
             "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "from",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "to",
+            "type": "uint256"
+          }
+        ],
+        "name": "getPoolData",
+        "outputs": [
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "pair",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "fee7",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "tvl",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "volume24",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct ExchangeHelper.PoolData[]",
+            "name": "pairFees",
+            "type": "tuple[]"
           }
         ],
         "stateMutability": "view",
@@ -10136,3 +10182,4 @@
     ]
   }
 }
+

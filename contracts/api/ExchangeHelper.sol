@@ -48,6 +48,30 @@ contract ExchangeHelper is Initializable {
         }
     }
 
+    struct PoolData {
+        address pair;
+        uint256 fee7;
+        uint256 tvl;
+        uint256 volume24;
+    }
+    function getPoolData(uint256 from, uint256 to) external view returns (PoolData[] memory pairFees) {
+        uint256 pairsLength = pairFactory.allPairsLength();
+        pairFees= new PoolData[](pairsLength);
+        for (uint i; i < pairsLength; i++) {
+            // TODO: ONLY WHITELISTED PAIRS
+            // voter.isWhitelisted()
+            Pair pair = Pair(pairFactory.allPairs(i));
+            (uint256 pairFee) = getFeesInUSDForPair(pair);
+            (,,,,uint256 volume) = getVolumeLockedPerTimeForPair(pair, from, to);
+            (,,uint256 tvl) = getTVLInUSDForPair(pair );
+            pairFees[i] = PoolData({
+                pair: address(pair),
+                fee7: pairFee,
+                tvl: tvl,
+                volume24:volume
+            });
+        }
+    }
     /**
      *
      * @param pair Address of pair
