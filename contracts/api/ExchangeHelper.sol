@@ -39,14 +39,20 @@ contract ExchangeHelper is Initializable {
         totalVL = token0VL + token1VL;
     }
 
-    function getTVLInUSDForAllPairs() external view returns (uint256 totalTVL, Pair[] memory pairs) {
+    function getTVLInUSDForAllPairs()
+        external
+        view
+        returns (uint256 totalTVL, uint256[] memory tvls, Pair[] memory pairs)
+    {
         uint256 pairsLength = pairFactory.allPairsLength();
         pairs = new Pair[](pairsLength);
+        tvls = new uint256[](pairsLength);
         for (uint i; i < pairsLength; i++) {
             Pair pair = Pair(pairFactory.allPairs(i));
             (, , uint256 pairTVL) = getTVLInUSDForPair(pair);
             totalTVL += pairTVL;
             pairs[i] = pair;
+            tvls[i] = pairTVL;
         }
     }
 
@@ -98,14 +104,16 @@ contract ExchangeHelper is Initializable {
     function getTotalVolumeLockedPerTime(
         uint256 from,
         uint256 to
-    ) external view returns (uint256 tvlPerTime, Pair[] memory pairs) {
+    ) external view returns (uint256 tvlPerTime, uint256[] memory volumes, Pair[] memory pairs) {
         uint256 pairsLength = pairFactory.allPairsLength();
         pairs = new Pair[](pairsLength);
+        volumes = new uint256[](pairsLength);
         for (uint i; i < pairsLength; i++) {
             Pair pair = Pair(pairFactory.allPairs(i));
             (, , , , uint256 pairTVLPerTime) = getVolumeLockedPerTimeForPair(pair, from, to);
             tvlPerTime += pairTVLPerTime;
             pairs[i] = pair;
+            volumes[i] = pairTVLPerTime;
         }
     }
 
@@ -155,9 +163,14 @@ contract ExchangeHelper is Initializable {
         }
     }
 
-    function getFeesInUSDForAllPairs() external view returns (uint256 totalValue, Pair[] memory pairs) {
+    function getFeesInUSDForAllPairs()
+        external
+        view
+        returns (uint256 totalValue, uint256[] memory fees, Pair[] memory pairs)
+    {
         uint256 pairsLength = pairFactory.allPairsLength();
         pairs = new Pair[](pairsLength);
+        fees = new uint256[](pairsLength);
         for (uint i; i < pairsLength; i++) {
             Pair pair = Pair(pairFactory.allPairs(i));
             uint256 pairFeeUSD = getFeesInUSDForPair(pair);
