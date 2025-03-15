@@ -33,7 +33,7 @@ contract ExchangeHelper is Initializable {
 
     function getTVLInUSDForPair(Pair pair) public view returns (uint256 token0VL, uint256 token1VL, uint256 totalVL) {
         (uint256 token0USD, ) = priceOracle.getAverageValueInUSD(pair.token0(), pair.reserve0());
-        (uint256 token1USD, ) = priceOracle.getAverageValueInUSD(pair.token1(), pair.reserve0());
+        (uint256 token1USD, ) = priceOracle.getAverageValueInUSD(pair.token1(), pair.reserve1());
         token0VL = token0USD;
         token1VL = token1USD;
         totalVL = token0VL + token1VL;
