@@ -51,6 +51,7 @@
     "create:mock:tokens": "npx hardhat run scripts/createMockTokens.ts",
     "call:dibs": "npx hardhat run scripts/callDibs.ts",
     "init:voter": "npx hardhat run scripts/initVoter.ts",
-    "deploy:exchange:helper": "npx hardhat run scripts/core/deploy-exchange-helper.ts"
+    "deploy:exchange:helper": "npx hardhat run scripts/core/deploy-exchange-helper.ts",
+    "get:tvl": "npx hardhat run scripts/getTVL.ts"
   }
 }
