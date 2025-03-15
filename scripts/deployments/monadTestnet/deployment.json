@@ -9810,7 +9810,7 @@
     ]
   },
   "ExchangeHelper": {
-    "contractAddress": "0x7D7e0040890d06663AcbaDB11Fd5A4aAEc21B825",
+    "contractAddress": "0xedF3cd090d0DB98Fb3B72995BA4D1d8345B1d33c",
     "abi": [
       {
         "inputs": [],
@@ -9888,6 +9888,11 @@
             "internalType": "uint256",
             "name": "totalValue",
             "type": "uint256"
+          },
+          {
+            "internalType": "contract Pair[]",
+            "name": "pairs",
+            "type": "address[]"
           }
         ],
         "stateMutability": "view",
@@ -9920,6 +9925,11 @@
             "internalType": "uint256",
             "name": "totalTVL",
             "type": "uint256"
+          },
+          {
+            "internalType": "contract Pair[]",
+            "name": "pairs",
+            "type": "address[]"
           }
         ],
         "stateMutability": "view",
@@ -9973,6 +9983,11 @@
             "internalType": "uint256",
             "name": "tvlPerTime",
             "type": "uint256"
+          },
+          {
+            "internalType": "contract Pair[]",
+            "name": "pairs",
+            "type": "address[]"
           }
         ],
         "stateMutability": "view",

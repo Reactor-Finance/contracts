@@ -33,6 +33,12 @@ async function getTVL() {
   console.log(bn0.toString());
   const bn = await helper.getTVLInUSDForAllPairs();
   console.log(bn.toString());
+  const v = await helper.getFeesInUSDForAllPairs();
+  console.log(v.toString());
+  const _now = Math.floor(Date.now() / 1000);
+  const _24HrsAgo = _now - 60 * 60 * 24;
+  const x = await helper.getTotalVolumeLockedPerTime(_24HrsAgo, _now);
+  console.log(x.toString());
 }
 
 getTVL()

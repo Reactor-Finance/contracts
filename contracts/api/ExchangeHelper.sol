@@ -39,12 +39,14 @@ contract ExchangeHelper is Initializable {
         totalVL = token0VL + token1VL;
     }
 
-    function getTVLInUSDForAllPairs() external view returns (uint256 totalTVL) {
+    function getTVLInUSDForAllPairs() external view returns (uint256 totalTVL, Pair[] memory pairs) {
         uint256 pairsLength = pairFactory.allPairsLength();
+        pairs = new Pair[](pairsLength);
         for (uint i; i < pairsLength; i++) {
             Pair pair = Pair(pairFactory.allPairs(i));
             (, , uint256 pairTVL) = getTVLInUSDForPair(pair);
             totalTVL += pairTVL;
+            pairs[i] = pair;
         }
     }
 
@@ -93,12 +95,17 @@ contract ExchangeHelper is Initializable {
         totalVolumeUSD = token0VolumeUSD + token1VolumeUSD;
     }
 
-    function getTotalVolumeLockedPerTime(uint256 from, uint256 to) external view returns (uint256 tvlPerTime) {
+    function getTotalVolumeLockedPerTime(
+        uint256 from,
+        uint256 to
+    ) external view returns (uint256 tvlPerTime, Pair[] memory pairs) {
         uint256 pairsLength = pairFactory.allPairsLength();
+        pairs = new Pair[](pairsLength);
         for (uint i; i < pairsLength; i++) {
             Pair pair = Pair(pairFactory.allPairs(i));
             (, , , , uint256 pairTVLPerTime) = getVolumeLockedPerTimeForPair(pair, from, to);
             tvlPerTime += pairTVLPerTime;
+            pairs[i] = pair;
         }
     }
 
@@ -148,12 +155,14 @@ contract ExchangeHelper is Initializable {
         }
     }
 
-    function getFeesInUSDForAllPairs() external view returns (uint256 totalValue) {
+    function getFeesInUSDForAllPairs() external view returns (uint256 totalValue, Pair[] memory pairs) {
         uint256 pairsLength = pairFactory.allPairsLength();
+        pairs = new Pair[](pairsLength);
         for (uint i; i < pairsLength; i++) {
             Pair pair = Pair(pairFactory.allPairs(i));
             uint256 pairFeeUSD = getFeesInUSDForPair(pair);
             totalValue += pairFeeUSD;
+            pairs[i] = pair;
         }
     }
 }
