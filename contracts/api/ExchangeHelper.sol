@@ -175,6 +175,44 @@ contract ExchangeHelper is Initializable {
             Pair pair = Pair(pairFactory.allPairs(i));
             uint256 pairFeeUSD = getFeesInUSDForPair(pair);
             totalValue += pairFeeUSD;
+            fees[i] = pairFeeUSD;
+            pairs[i] = pair;
+        }
+    }
+
+    function getBribesInUSDForPair(Pair pair) public view returns (uint256 totalValue) {
+        address gauge = voter.gauges(address(pair));
+
+        totalValue = 0;
+
+        if (gauge != address(0)) {
+            IBribe bribe = IBribe(voter.external_bribes(gauge));
+            uint256 rewardTokensLength = bribe.rewardsListLength();
+            for (uint i; i < rewardTokensLength; i++) {
+                address rewardToken = bribe.rewardTokens(i);
+                bytes memory data = address(bribe).functionStaticCall(
+                    abi.encodeWithSelector(rewardPerTokenSelector, rewardToken, block.timestamp)
+                );
+                uint256 reward = abi.decode(data, (uint256));
+                (uint256 rewardInUsd, ) = priceOracle.getAverageValueInUSD(rewardToken, reward);
+                totalValue += rewardInUsd;
+            }
+        }
+    }
+
+    function getBribesInUSDForAllPairs()
+        external
+        view
+        returns (uint256 totalValue, uint256[] memory bribes, Pair[] memory pairs)
+    {
+        uint256 pairsLength = pairFactory.allPairsLength();
+        pairs = new Pair[](pairsLength);
+        bribes = new uint256[](pairsLength);
+        for (uint i; i < pairsLength; i++) {
+            Pair pair = Pair(pairFactory.allPairs(i));
+            uint256 pairBribeUSD = getBribesInUSDForPair(pair);
+            totalValue += pairBribeUSD;
+            bribes[i] = pairBribeUSD;
             pairs[i] = pair;
         }
     }

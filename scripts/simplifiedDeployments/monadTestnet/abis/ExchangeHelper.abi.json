@@ -69,6 +69,48 @@
   },
   {
     "inputs": [],
+    "name": "getBribesInUSDForAllPairs",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "totalValue",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "bribes",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "contract Pair[]",
+        "name": "pairs",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract Pair",
+        "name": "pair",
+        "type": "address"
+      }
+    ],
+    "name": "getBribesInUSDForPair",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "totalValue",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getFeesInUSDForAllPairs",
     "outputs": [
       {
