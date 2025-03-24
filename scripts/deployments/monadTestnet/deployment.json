@@ -9810,7 +9810,7 @@
     ]
   },
   "ExchangeHelper": {
-    "contractAddress": "0x7AdDCeD59255d8a72d5eA7bB8ae0d54aeC8752Ad",
+    "contractAddress": "0x9cb90faa71fb6dfd8aaB747460080C52CA9B0B23",
     "abi": [
       {
         "inputs": [],
@@ -9874,6 +9874,48 @@
           {
             "internalType": "uint256",
             "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "getBribesInUSDForAllPairs",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "totalValue",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "bribes",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "contract Pair[]",
+            "name": "pairs",
+            "type": "address[]"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "contract Pair",
+            "name": "pair",
+            "type": "address"
+          }
+        ],
+        "name": "getBribesInUSDForPair",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "totalValue",
             "type": "uint256"
           }
         ],
