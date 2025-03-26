@@ -87,7 +87,7 @@ contract VoterActionsSingleton is Ownable, ReentrancyGuard {
         }
     }
 
-    function claimRewardsForTokenId(uint256 tokenId) external nonReentrant {
+    function claimRewardsForTokenId(uint256 tokenId) public nonReentrant {
         updateRecordForTokenId(tokenId);
         TokenVoteCache memory vc = voteCache[tokenId];
         address voter = address(helper.voter());
@@ -97,5 +97,11 @@ contract VoterActionsSingleton is Ownable, ReentrancyGuard {
         voter.functionCall(
             abi.encodeWithSelector(voterClaimFeesSelector, vc.internal_bribes, vc.internal_bribes_tokens, tokenId)
         );
+    }
+
+    function claimRewardsForTokenIds(uint256[] memory tokenIds) external nonReentrant {
+        for (uint i; i < tokenIds.length; i++) {
+            claimRewardsForTokenId(tokenIds[i]);
+        }
     }
 }

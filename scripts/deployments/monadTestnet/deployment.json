@@ -10208,7 +10208,7 @@
     ]
   },
   "VoterActionsSingleton": {
-    "contractAddress": "0x878349Cf120170ad149Ab6129FD14CE9453aEC74",
+    "contractAddress": "0xac408042cAeb70cd67ED94C86D36f237D2945b15",
     "abi": [
       {
         "inputs": [
@@ -10308,6 +10308,19 @@
           }
         ],
         "name": "claimRewardsForTokenId",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256[]",
+            "name": "tokenIds",
+            "type": "uint256[]"
+          }
+        ],
+        "name": "claimRewardsForTokenIds",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
