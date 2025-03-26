@@ -52,6 +52,8 @@
     "call:dibs": "npx hardhat run scripts/callDibs.ts",
     "init:voter": "npx hardhat run scripts/initVoter.ts",
     "deploy:exchange:helper": "npx hardhat run scripts/core/deploy-exchange-helper.ts",
-    "get:tvl": "npx hardhat run scripts/getTVL.ts"
+    "get:tvl": "npx hardhat run scripts/getTVL.ts",
+    "set:voter": "npx hardhat run scripts/setVoter.ts",
+    "deploy:voter:singleton": "npx hardhat run scripts/core/deploy-voter-singleton.ts"
   }
 }
