@@ -87,7 +87,7 @@ contract VoterActionsSingleton is Ownable, ReentrancyGuard {
         }
     }
 
-    function claimRewardsForTokenId(uint256 tokenId) public nonReentrant {
+    function _claimRewardsForTokenId(uint256 tokenId) internal {
         updateRecordForTokenId(tokenId);
         TokenVoteCache memory vc = voteCache[tokenId];
         address voter = address(helper.voter());
@@ -99,9 +99,13 @@ contract VoterActionsSingleton is Ownable, ReentrancyGuard {
         );
     }
 
+    function claimRewardsForTokenId(uint256 tokenId) public nonReentrant {
+        _claimRewardsForTokenId(tokenId);
+    }
+
     function claimRewardsForTokenIds(uint256[] memory tokenIds) external nonReentrant {
         for (uint i; i < tokenIds.length; i++) {
-            claimRewardsForTokenId(tokenIds[i]);
+            _claimRewardsForTokenId(tokenIds[i]);
         }
     }
 }
