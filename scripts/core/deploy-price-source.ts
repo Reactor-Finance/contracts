@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 import hardhat from "hardhat";
 import { deploy, getContractWithAddress } from "../helpers";
-import { Oracle, ReactorPriceSource } from "../../artifacts/types";
+import { Oracle, UniswapV2PriceSource } from "../../artifacts/types";
 import { __CONSTANTS__ } from "../constants";
 
 interface DeploymentsOutputShape {
@@ -72,14 +72,16 @@ async function main() {
   const shape = __CONSTANTS__[hardhat.network.name];
   // Oracle contract
   const oracle = await getContractWithAddress<Oracle>(deployments.Oracle.contractAddress, "Oracle", "oracle/Oracle.sol");
-  const reactorPriceSource = await deploy<ReactorPriceSource>(
-    "ReactorPriceSource",
-    deployments.TradeHelper.contractAddress,
+  const uniswapV2PriceSource = await deploy<UniswapV2PriceSource>(
+    "UniswapV2PriceSource",
+    "0x733E88f248b742db6C14C0b1713Af5AD7fDd59D0",
+    "0xfB8e1C3b833f9E67a71C859a132cf783b645e436",
     "0x88b8E2161DEDC77EF4ab7585569D2415a1C1055D",
     "0xf817257fed379853cDe0fa4F97AB987181B1E5Ea",
     shape.wrappedEther as string
   );
-  await oracle.setPriceSources([reactorPriceSource.address]);
+  const oraclePriceSources = await oracle.getAllPriceSources();
+  await oracle.setPriceSources([...oraclePriceSources, uniswapV2PriceSource.address]);
 }
 
 main()

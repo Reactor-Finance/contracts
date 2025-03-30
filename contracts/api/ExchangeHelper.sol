@@ -154,7 +154,7 @@ contract ExchangeHelper is Initializable {
             for (uint i; i < rewardTokensLength; i++) {
                 address rewardToken = bribe.rewardTokens(i);
                 bytes memory data = address(bribe).functionStaticCall(
-                    abi.encodeWithSelector(rewardPerTokenSelector, rewardToken, block.timestamp)
+                    abi.encodeWithSelector(rewardPerTokenSelector, rewardToken, bribe.getNextEpochStart())
                 );
                 uint256 reward = abi.decode(data, (uint256));
                 (uint256 rewardInUsd, ) = priceOracle.getAverageValueInUSD(rewardToken, reward);
@@ -191,7 +191,7 @@ contract ExchangeHelper is Initializable {
             for (uint i; i < rewardTokensLength; i++) {
                 address rewardToken = bribe.rewardTokens(i);
                 bytes memory data = address(bribe).functionStaticCall(
-                    abi.encodeWithSelector(rewardPerTokenSelector, rewardToken, block.timestamp)
+                    abi.encodeWithSelector(rewardPerTokenSelector, rewardToken, bribe.getNextEpochStart())
                 );
                 uint256 reward = abi.decode(data, (uint256));
                 (uint256 rewardInUsd, ) = priceOracle.getAverageValueInUSD(rewardToken, reward);
