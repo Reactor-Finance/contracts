@@ -9810,7 +9810,7 @@
     ]
   },
   "ExchangeHelper": {
-    "contractAddress": "0x9cb90faa71fb6dfd8aaB747460080C52CA9B0B23",
+    "contractAddress": "0xD9f1B45bbaB76aaE30244906fBf426651CFcF5da",
     "abi": [
       {
         "inputs": [],
